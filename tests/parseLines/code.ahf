@@ -1,0 +1,10 @@
+;inicio do arquivo
+INI:
+	ADD A 128
+	SUB B 32
+O: JMP QWE
+ORG 128
+
+QWE:
+JP INI ; volta para o inicio
+HLT

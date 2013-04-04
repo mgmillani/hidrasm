@@ -1,0 +1,4 @@
+this is a test file with the phrase: "this is a test file"
+here be the "second" line,"wawawa"
+strings use """" or "'" always #\ is the escape character
+also, you can use "#" for comments
