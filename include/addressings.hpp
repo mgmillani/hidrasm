@@ -19,14 +19,19 @@
 #ifndef ADDRESSINGS_HPP
 #define ADDRESSINGS_HPP
 
+#include <stdio.h>
+
 #include <string>
 #include <map>
+
+#include "expression.hpp"
 
 using namespace std;
 
 typedef struct s_addressing
 {
-	string exp;
+	string expStr;
+	Expression expression;
 	string code;
 	bool relative;
 }t_addressing;
@@ -47,6 +52,13 @@ class Addressings
 	*	retorna a estrutura do modo de enderecamento com o nome dado
 	*/
 	t_addressing getAddressing(string name);
+
+	/**
+	  * escreve os dados da estrutura em stream
+	  */
+	void print(FILE *stream);
+
+	void printAddressing(t_addressing *a, FILE *stream);
 
 	private:
 

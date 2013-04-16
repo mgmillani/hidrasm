@@ -19,6 +19,8 @@
 #ifndef REGISTERS_HPP
 #define REGISTERS_HPP
 
+#include <stdio.h>
+
 #include <string>
 #include <map>
 
@@ -46,6 +48,16 @@ class	Registers
 	* -1 caso nao exista
 	*/
 	int number(string regName);
+
+	/**
+	  * verifica se um registrador existe ou nao
+	  */
+	bool exists(string regName);
+
+	/**
+	  * escreve os dados do objeto em stream
+	  */
+	void print(FILE *stream);
 
 	private:
 

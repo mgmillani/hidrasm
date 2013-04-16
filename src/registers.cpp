@@ -57,3 +57,28 @@ int Registers::number(string regName)
 {
 	return 0;
 }
+
+/**
+	* verifica se um registrador existe ou nao
+	*/
+bool Registers::exists(string regName)
+{
+	return true;
+}
+
+/**
+	* escreve os dados do objeto em stream
+	*/
+void Registers::print(FILE *stream)
+{
+
+	map<string,t_register>::iterator it;
+
+	for(it=this->regs.begin() ; it!=this->regs.end() ; it++)
+	{
+		t_register r = it->second;
+		fprintf(stream,"%s\n",r.name.c_str());
+	}
+
+}
+

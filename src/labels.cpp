@@ -79,3 +79,17 @@ unsigned int Labels::line(string name)
 		return i->second;
 	}
 }
+
+/**
+	* verifica se existe uma label definida com o nome dado
+	*/
+bool Labels::exists(string name)
+{
+
+	map<string,unsigned int>::iterator i = this->lines.find(name);
+	if(i == this->defs.end())
+		return false;
+	else
+		return true;
+
+}

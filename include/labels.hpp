@@ -31,21 +31,26 @@ class Labels
 	public:
 
 	/**
-	*	adiciona a definicao de uma label
-	*/
+	  *	adiciona a definicao de uma label
+	  */
 	void define(string name,unsigned int pos,unsigned int line);
 
 	/**
-	*	retorna a posicao em que a label foi definida
-	*	conta como uma referencia a label
-	*/
+	  *	retorna a posicao em que a label foi definida
+	  *	conta como uma referencia a label
+	  */
 	unsigned int value(string name);
 
 	/**
-	* retorna a linha em que a label foi definida
-	* nao conta como uma referencia
-	*/
+	  * retorna a linha em que a label foi definida
+	  * nao conta como uma referencia
+	  */
 	unsigned int line(string name);
+
+	/**
+	  * verifica se existe uma label definida com o nome dado
+	  */
+	bool exists(string name);
 
 	private:
 

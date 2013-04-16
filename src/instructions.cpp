@@ -23,6 +23,9 @@
 #include "instructions.hpp"
 #include "addressings.hpp"
 #include "registers.hpp"
+#include "expression.hpp"
+#include "operands.hpp"
+#include "multiExpression.hpp"
 #include "labels.hpp"
 #include "numbers.hpp"
 #include "stringer.hpp"
@@ -82,14 +85,14 @@ bool Instructions::isInstruction(string mnemonic)
 * retorna o array com esse codigo
 * escreve o numero de bytes em size
 */
-unsigned char* assemble(string mnemonic, string operands,int *size,Addressings addressings,Labels labels, Registers registers)
+unsigned char* Instructions::assemble(string mnemonic, string operandsStr,int *size,Addressings addressings,Labels labels, Registers registers)
 {
 
 	//busca todas as instrucoes com o dado mnemonico
-	map<string,t_instruction>::iterator it = this->insts.find(mnemonic);
+	map<string,list<t_instruction> >::iterator it = this->insts.find(mnemonic);
 	//se nao encontrou
 	if(it==this->insts.end())
-		throw (eUnknownInstruction);
+		throw (eUnknownMnemonic);
 
 	list<t_instruction> matches = it->second;
 	list<t_instruction>::iterator jt;
@@ -101,18 +104,18 @@ unsigned char* assemble(string mnemonic, string operands,int *size,Addressings a
 	for(jt=matches.begin() ; jt!=matches.end() && !inOk; jt++)
 	{
 		i = *jt;
-		Expression e(i.operandExpression);
 
 		list<string>::iterator addr;
 		//cria uma lista com todas as expressoes dos modos de enderecamento
-		list<string> expr;
+		list<Expression> expr;
 		for(addr=i.addressingNames.begin() ; addr!=i.addressingNames.end() ; addr++)
 		{
 			t_addressing a = addressings.getAddressing(*addr);
-			expr.push_back(a.exp);
+			expr.push_back(a.expression);
 		}
 
-		list<t_match > matches = e.findAllSub(operands,expr);
+		MultiExpression mulEx(expr,i.operandExpression);
+		list<t_match > matches = mulEx.findAllSub(operandsStr);
 
 		//verifica se as variaveis sao do tipo adequado
 		list<t_match>::iterator imatch;
@@ -134,7 +137,8 @@ unsigned char* assemble(string mnemonic, string operands,int *size,Addressings a
 					t_operand op;
 					op.name = m.element;
 					op.type = 'r';
-					op.relative = m.relative[VAR_REGISTER];
+					//op.relative = m.relative[VAR_REGISTER];
+					op.relative = false;
 					op.addressingCode = m.subCode[VAR_REGISTER];
 					operands.push_back(op);
 					opOk=true;
@@ -148,7 +152,8 @@ unsigned char* assemble(string mnemonic, string operands,int *size,Addressings a
 					t_operand op;
 					op.name = m.element;
 					op.type = 'n';
-					op.relative = m.relative[VAR_NUMBER];
+					//op.relative = m.relative[VAR_NUMBER];
+					op.relative = false;
 					op.addressingCode = m.subCode[VAR_NUMBER];
 					operands.push_back(op);
 					opOk=true;
@@ -162,7 +167,8 @@ unsigned char* assemble(string mnemonic, string operands,int *size,Addressings a
 					t_operand op;
 					op.name = m.element;
 					op.type = 'l';
-					op.relative = m.relative[VAR_LABEL];
+					//op.relative = m.relative[VAR_LABEL];
+					op.relative = false;
 					op.addressingCode = m.subCode[VAR_LABEL];
 					operands.push_back(op);
 					opOk=true;
@@ -181,29 +187,30 @@ unsigned char* assemble(string mnemonic, string operands,int *size,Addressings a
 	else
 	{
 		//i contem a ultima instrucao avaliada
-		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings);
+		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,*size);
 		Number n;
-		unsigned char *code = n.toByteArray(code,size);
-		return code;
+		unsigned char *codeArray = n.toByteArray(code,size);
+		return codeArray;
 	}
 }
 
 /**
-* substitui os operandos, escrevendo seu valor binario na string
-* em format:
-* r[n] indica o n-esimo registrador. Se n for omitido, segue a ordem em que aparecem
-* e[n](m) indica o n-esimo endereco. Se n for omitido, segue a ordem em que aparecem. m indica o tamanho, em bits
-* m[n] indica o n-esimo modo de enderecamento. Se n for omitido, segue a ordem em que aparecem
-* 1 e 0 indicam os proprios algarismos
-* qualquer outro caractere sera ignorado
-* size indica quantos bits o resultado deve ter
-* a string retornanda contera somente 0s e 1s e sera terminada por um 'b'
-*/
+  * substitui os operandos, escrevendo seu valor binario na string
+  * em format:
+  * r[n] indica o n-esimo registrador. Se n for omitido, segue a ordem em que aparecem
+  * e[n](m) indica o n-esimo endereco. Se n for omitido, segue a ordem em que aparecem. m indica o   tamanho, em bits
+  * m[n] indica o n-esimo modo de enderecamento. Se n for omitido, segue a ordem em que aparecem
+  * 1 e 0 indicam os proprios algarismos
+  * qualquer outro caractere sera ignorado
+  * size indica quantos bits o resultado deve ter
+  * a string retornanda contera somente 0s e 1s e sera terminada por um 'b'
+  */
 string replaceOperands(string format,list<t_operand> operands,Registers registers,Labels labels,Addressings addressings,unsigned int size)
 {
 
 	typedef enum {STATE_COPY,STATE_NUM,STATE_REGISTER,STATE_MODE,STATE_ADDRESS,STATE_I_OPERAND,STATE_W_OPERAND} e_state;
 
+	Operands operand(operands);
 	Number n;
 	e_state state = STATE_COPY;
 	e_state nextState = STATE_COPY;
@@ -223,7 +230,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 
 	for(r=w=0 ; r<format.size() && w<size ; r++)
 	{
-		unsigned char c = string[r];
+		unsigned char c = format[r];
 		switch (state)
 		{
 			case STATE_COPY:
@@ -241,14 +248,14 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				//se for um [, o indice esta sendo informado
 				if(c=='[')
 				{
-					b = i;
+					b = r;
 					state = STATE_NUM;
 					nextState = STATE_I_OPERAND;
 					type = REGISTER;
 				}
 				else
 				{
-					op = getNextOperand(operands,REGISTER);
+					op = operand.getNextOperand(REGISTER);
 					number = op.value;
 					//copia o valor
 					unsigned int i;
@@ -261,7 +268,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 						case ADDRESSING: state = STATE_MODE; break;
 						case ADDRESS: state = STATE_ADDRESS; break;
 						default:
-							i--;
+							r--;
 							state=STATE_COPY;
 					}
 				}
@@ -271,14 +278,14 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				//se for um [, o indice esta sendo informado
 				if(c=='[')
 				{
-					b = i;
+					b = r;
 					state = STATE_NUM;
 					nextState = STATE_I_OPERAND;
 					type = ADDRESSING;
 				}
 				else
 				{
-					op = getNextOperand(operands,ADDRESSING);
+					op = operand.getNextOperand(ADDRESSING);
 					number = op.value;
 					//copia o valor
 					unsigned int i;
@@ -291,7 +298,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 						case ADDRESSING: state = STATE_MODE; break;
 						case ADDRESS: state = STATE_ADDRESS; break;
 						default:
-							i--;
+							r--;
 							state=STATE_COPY;
 					}
 				}
@@ -302,14 +309,14 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				//se for um [, o indice esta sendo informado
 				if(c=='[')
 				{
-					b = i;
+					b = r;
 					state = STATE_NUM;
 					nextState = STATE_I_OPERAND;
 					type = ADDRESS;
 				}
 				else
 				{
-					op = getNextOperand(operands,ADDRESS);
+					op = operand.getNextOperand(ADDRESS);
 					number = op.value;
 					//adiciona a lista de enderecos
 					addresses.push_back(number);
@@ -322,7 +329,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 						case ADDRESSING: state = STATE_MODE; break;
 						case ADDRESS: state = STATE_ADDRESS; break;
 						default:
-							i--;
+							r--;
 							state=STATE_COPY;
 					}
 				}
@@ -331,14 +338,14 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 
 			//foi informado o indice do operando
 			case STATE_I_OPERAND:
-				op = getOperand(operands,type,value);
+				op = operand.getOperandIndex(type,value);
 				number = op.value;
 				//foi informado o tamanho do operando
 				if(c=='(')
 				{
 					state = STATE_NUM;
-					nextState = STATE_S_OPERAND;
-					b = i;
+					nextState = STATE_W_OPERAND;
+					b = r;
 				}
 				else
 				{
@@ -351,8 +358,8 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					}
 					//caso contrario, escreve o valor
 					else
-						for(int k=0 ; k<op.value.size()-1 ; k++)
-							result[w++] = value[k];
+						for(unsigned int k=0 ; k<op.value.size()-1 ; k++)
+							result[w++] = op.value[k];
 					//determina o proximo estado
 					switch(tolower(c))
 					{
@@ -360,21 +367,21 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 						case ADDRESSING: state = STATE_MODE; break;
 						case ADDRESS: state = STATE_ADDRESS; break;
 						default:
-							i--;
+							r--;
 							state=STATE_COPY;
 					}
 				}
 
 				break;
 			//escreve o operando (esta em number), usando exatamente value bits
-			case STATE_S_OPERAND:
+			case STATE_W_OPERAND:
 				{
 					//propaga o sinal, se necessario
 					int k;
-					for(k=0 ; k<(value-(number.size()-1)) ; k++)
+					for(k=0 ; k<(value-((int)number.size()-1)) ; k++)
 						result[w++] = op.value[0];
 					//trunca o numero, escrevendo somente os bits menos significativos
-					for(k = value-k ; k<(number.size()-1)) ; k++)
+					for(k = value-k ; k<((int)number.size()-1) ; k++)
 						result[w++] = op.value[k];
 				}
 				//determina o proximo estado
@@ -384,7 +391,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					case ADDRESSING: state = STATE_MODE; break;
 					case ADDRESS: state = STATE_ADDRESS; break;
 					default:
-						i--;
+						r--;
 						state=STATE_COPY;
 				}
 
@@ -395,11 +402,62 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				//o numero terminou
 				if(c==']' || c==')')
 				{
-					value = n.toInt(format.substr(b,i-b));
+					value = n.toInt(format.substr(b,r-b));
 					state = nextState;
 				}
 
 				break;
 		}//end switch
 	}
+
+	return "0";
+}
+
+/**
+	* escreve as caracteristicas do conjunto de instrucoes em stream
+	*/
+void Instructions::print(FILE *stream)
+{
+
+	map<string, list<t_instruction> >::iterator it;
+	for(it=this->insts.begin() ; it!=this->insts.end() ; it++)
+	{
+		list<t_instruction>::iterator jt;
+		for(jt=it->second.begin() ; jt!=it->second.end() ; jt++)
+		{
+			t_instruction i = *jt;
+			this->printInstruction(&i,stream);
+		}
+	}
+
+}
+
+/**
+	* escreve os atributos da estrutura em stream
+	*/
+void Instructions::printInstruction(t_instruction *inst,FILE *stream)
+{
+
+	//mnemonico
+	fprintf(stream,"\n# %s #\n",inst->mnemonic.c_str());
+	//tamanho
+	fprintf(stream,"Size = %u\n",inst->size);
+	//expressao do operando
+	fprintf(stream,"Operand Expression: %s\n",inst->operandExpression.c_str());
+	//modos de enderecamento que podem ser usados
+	fprintf(stream,"Available addressing modes: \n");
+	list<string>::iterator it;
+	for(it=inst->addressingNames.begin() ; it!=inst->addressingNames.end() ; it++)
+		fprintf(stream," %s",it->c_str());
+	fprintf(stream,"\n");
+
+	//registradores que podem ser usados
+	fprintf(stream,"Available registers: \n");
+	for(it=inst->regs.begin() ; it!=inst->regs.end() ; it++)
+		fprintf(stream," %s",it->c_str());
+	fprintf(stream,"\n");
+
+	//formato binario da instrucao
+	fprintf(stream,"Format: %s\n",inst->binFormat.c_str());
+
 }

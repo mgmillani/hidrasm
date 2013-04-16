@@ -62,6 +62,11 @@ class Number
 	* o numero n deve ser valido
 	*/
 	void convertDigits(string n, unsigned char *values,e_numType type);
+
+	/**
+	  * verifica se o dado numero eh valido
+	  */
+	bool exists(string number);
 };
 
 #endif // NUMBERS_HPP

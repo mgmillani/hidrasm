@@ -111,7 +111,7 @@ void Addressings::load(string config)
 			case STATE_EXP:
 				if(ISWHITESPACE(c))
 				{
-					addr.exp = config.substr(b,i-b);
+					addr.expStr = config.substr(b,i-b);
 					state = STATE_END;
 				}
 				break;
@@ -126,16 +126,46 @@ void Addressings::load(string config)
 
 	if(state != STATE_END && !comment)
 	{
-		addr.exp = config.substr(b,i-b);
+		addr.expStr = config.substr(b,i-b);
 	}
 
 	this->addrs[name] = addr;
 }
 
 /**
+	* escreve os dados da estrutura em stream
+	*/
+void Addressings::print(FILE *stream)
+{
+
+	map<string,t_addressing>::iterator it;
+	for(it=this->addrs.begin() ; it!=this->addrs.end() ; it++)
+	{
+		t_addressing a = it->second;
+		//escreve o nome do modo de enderecamento
+		fprintf(stream,"%s mode:\n",it->first.c_str());
+
+		this->printAddressing(&a,stream);
+	}
+
+}
+
+void Addressings::printAddressing(t_addressing *a, FILE *stream)
+{
+
+	//expressao
+	fprintf(stream,"Expression: %s\n",a->expStr.c_str());
+	//codigo
+	fprintf(stream,"Code: %s\n",a->code.c_str());
+	//se eh relativo ao pc ou nao
+	fprintf(stream,"Relative: %d\n",(int)a->relative);
+
+}
+
+/**
 *	retorna a estrutura do modo de enderecamento com o nome dado
 */
-t_addressing getAddressing(string name)
+t_addressing Addressings::getAddressing(string name)
 {
 	return this->addrs.find(name)->second;
 }

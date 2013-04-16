@@ -354,7 +354,7 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 
 	t_status status;
 	status.line = lineNumber;
-	status.pos = byte;
+	status.position = byte;
 	string defLabel;
 	string mnemonic;
 	string operands;
@@ -366,7 +366,9 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	if(defLabel!="")
 	{
 		try
-			this->labels.define(defLabel);
+		{
+			this->labels.define(defLabel,status.line,status.position);
+		}
 		catch(e_exception e)
 		{
 			if(e == eRedefinedLabel)
@@ -377,23 +379,28 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 		}
 	}
 	//se for uma instrucao, monta-a
+	int size;
 	if(this->inst.isInstruction(mnemonic))
 	{
-		this->inst.assemble(mnemonic,operands);
+		this->inst.assemble(mnemonic,operands,&size,this->addr,this->labels,this->regs);
 	}
 	//executa a diretiva
 	else
 		try
+		{
 			byte = this->directives.execute(mnemonic,operands,memory,byte);
+		}
 		catch(e_exception e)
 		{
 			switch(e)
 			{
-				case eUnkownMnemonic:
+				case eUnknownMnemonic:
 					this->messenger.generateMessage(mUnknownInstruction,&status);
 					break;
 				case eIncorrectOperands:
 					this->messenger.generateMessage(mIncorrectOperands,&status);
+					break;
+				default:
 					break;
 			}
 		}
@@ -408,6 +415,28 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	return byte;
 }
 
+/**
+	* escreve a situacao atual dos atributos do objeto
+	*/
+void Assembler::print(FILE *stream)
+{
+
+	//lista as instrucoes definidas
+	const char instStr[] = "Instructions:\n";
+	fwrite(instStr,1,sizeof(instStr),stream);
+	this->inst.print(stream);
+
+	//lista os modos de enderecamento
+	const char addrStr[] = "\n\nAddressings:\n";
+	fwrite(addrStr,1,sizeof(addrStr),stream);
+	this->addr.print(stream);
+
+	//lista os registradores
+	const char regStr[] = "\n\nRegisters:\n";
+	fwrite(regStr,1,sizeof(regStr),stream);
+	this->regs.print(stream);
+
+}
 
 
 

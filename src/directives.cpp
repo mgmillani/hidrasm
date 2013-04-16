@@ -29,7 +29,7 @@ using namespace std;
 /**
 * executa a diretiva, retornando em qual byte a montagem deve continuar
 */
-unsigned int execute(string directive,string operands,Memory *memory,unsigned int currentByte)
+unsigned int Directives::execute(string directive,string operands,Memory *memory,unsigned int currentByte)
 {
 	Number n;
 	//muda o proximo byte par amontagem

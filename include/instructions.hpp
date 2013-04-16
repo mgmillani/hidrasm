@@ -19,11 +19,16 @@
 #ifndef INSTRUCTIONS_HPP
 #define INSTRUCTIONS_HPP
 
+#include <stdio.h>
+
 #include <string>
 #include <list>
 #include <map>
 
 #include "addressings.hpp"
+#include "registers.hpp"
+#include "operands.hpp"
+#include "labels.hpp"
 
 using namespace std;
 
@@ -37,15 +42,6 @@ typedef struct s_instruction
 	string binFormat;
 
 }t_instruction;
-
-typedef struct s_operand
-{
-	string name;
-	string addressingCode;	//codigo binario do modo de enderecamento
-	string value;
-	char type;	//r,l ou n
-	bool relative;
-}t_operand;
 
 class Instructions
 {
@@ -69,23 +65,36 @@ class Instructions
 	* retorna o array com esse codigo
 	* escreve o numero de bytes em size
 	*/
-	unsigned char* assemble(string mnemonic, string operands,int *size,Addressings addressings);
+	unsigned char* assemble(string mnemonic, string operands,int *size,Addressings addressings,Labels labels, Registers registers);
+
+	/**
+	  * escreve as caracteristicas do conjunto de instrucoes em stream
+	  */
+	void print(FILE *stream);
 
 	private:
 
+	/**
+	  * escreve os atributos da estrutura em stream
+	  */
+	void printInstruction(t_instruction *i,FILE *stream);
+
 	map<string,list<t_instruction> > insts;	//relaciona o mnemonico com a estrutura
+
+
 };
 
 /**
-* substitui os operandos, escrevendo seu valor binario na string
-* a string retornanda contera somente 0s e 1s e sera terminada por um 'b'
-* em format:
-* r[n] indica o n-esimo registrador. Se n for omitido, segue a ordem em que aparecem
-* e[n] indica o n-esimo endereco. Se n for omitido, segue a ordem em que aparecem
-* m[n] indica o n-esimo modo de enderecamento. Se n for omitido, segue a ordem em que aparecem
-* 1 e 0 indicam os proprios algarismos
-* qualquer outro caractere sera ignorado
-*/
-string replaceOperands(string format,list<t_operand> operands,Registers registers,Labels labels,Addressings addressings);
+  * substitui os operandos, escrevendo seu valor binario na string
+  * em format:
+  * r[n] indica o n-esimo registrador. Se n for omitido, segue a ordem em que aparecem
+  * e[n](m) indica o n-esimo endereco. Se n for omitido, segue a ordem em que aparecem. m indica o tamanho, em bits
+  * m[n] indica o n-esimo modo de enderecamento. Se n for omitido, segue a ordem em que aparecem
+  * 1 e 0 indicam os proprios algarismos
+  * qualquer outro caractere sera ignorado
+  * size indica quantos bits o resultado deve ter
+  * a string retornanda contera somente 0s e 1s e sera terminada por um 'b'
+  */
+string replaceOperands(string format,list<t_operand> operands,Registers registers,Labels labels,Addressings addressings,unsigned int size);
 
 #endif // INSTRUCTIONS_HPP

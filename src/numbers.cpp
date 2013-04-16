@@ -133,6 +133,8 @@ void Number::convertDigits(string n, unsigned char *values,e_numType type)
 					values[i] = n[i] - 'a' + 10;
 			}
 			break;
+		default:
+			break;
 	}
 }
 
@@ -272,7 +274,19 @@ unsigned char *Number::toByteArray(string n, int *size)
 
 }
 
+/**
+	* verifica se o dado numero eh valido
+	*/
+bool Number::exists(string number)
+{
 
+	e_numType num = this->numberType(number);
+	if(num == INVALID)
+		return false;
+	else
+		return true;
+
+}
 
 
 
