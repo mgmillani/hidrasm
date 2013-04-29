@@ -29,6 +29,7 @@
 #include "registers.hpp"
 #include "operands.hpp"
 #include "labels.hpp"
+#include "memory.hpp"
 
 using namespace std;
 
@@ -62,10 +63,8 @@ class Instructions
 
 	/**
 	*	gera o codigo binario de uma instrucao usando notacao little-endian
-	* retorna o array com esse codigo
-	* escreve o numero de bytes em size
 	*/
-	unsigned char* assemble(string mnemonic, string operands,int *size,Addressings addressings,Labels labels, Registers registers);
+	void assemble(string mnemonic, string operands,Memory *mem,Addressings addressings,Labels labels, Registers registers);
 
 	/**
 	  * escreve as caracteristicas do conjunto de instrucoes em stream

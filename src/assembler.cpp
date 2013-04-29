@@ -34,6 +34,7 @@
 #include "memory.hpp"
 
 #include "defs.hpp"
+#include "debug.hpp"
 
 using namespace std;
 
@@ -41,12 +42,6 @@ using namespace std;
 *	cria um montador, especificando quais sao as propriedades da maquina/arquiterua para qual os codigos serao montados
 */
 //Assemlber::Assembler(Instructions *inst, Registers *reg, Machine *machine, Adressing *adr);
-
-//dumy
-Assembler::Assembler()
-{
-
-}
 
 /**
 *	le as caracteristicas da arquitetura que estao no arquivo dado
@@ -148,6 +143,8 @@ Assembler::Assembler(const char *filename)
 Memory Assembler::assembleCode(string code)
 {
 	//quebra as linhas
+
+	ERR("Assemble\n");
 	list<string> lines = stringSplitChar(code,"\n\r");
 
 	//aloca espaco suficiente para a memoria
@@ -161,6 +158,7 @@ Memory Assembler::assembleCode(string code)
 	//monta cada linha
 	for(it=lines.begin() ; it!=lines.end() ; it++,line++)
 	{
+		ERR("Assembling line: %s\n",(*it).c_str());
 		pos = this->assembleLine(*it,&memory,pos,line);
 	}
 
@@ -185,6 +183,98 @@ Memory Assembler::assembleCode(string code)
 	}
 
 	return memory;
+}
+
+
+/**
+*	monta uma linha, escrevendo seu codigo binario a partir de memory[byte]
+* line eh a linha a ser montada
+* se houver alguma label que ainda nao foi definida, reserva espaco e adiciona a pendencia na pilha
+* se for encontrada a definicao de uma label, acrescenta-a as Labels conhecidas
+* retorna a posicao da memoria em que a proxima linha deve comecar
+*/
+unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int byte,unsigned int lineNumber)
+{
+
+	ERR("Assembling line...\n");
+
+	t_status status;
+	status.value = 0;
+	status.lastOrgLine = 0;
+	status.position = 0;
+	status.foundOperands = 0;
+	status.expectedOperands = 0;
+	status.operandSize = 0;
+	status.line = lineNumber;
+	status.position = byte;
+	string defLabel;
+	string mnemonic;
+	string operands;
+	this->parseLine(line,&defLabel,&mnemonic,&operands);
+	status.label = defLabel;
+	status.firstDefinition = 0;
+	status.mnemonic = mnemonic;
+	status.operand = operands;
+	//define a label
+	if(defLabel!="")
+	{
+		try
+		{
+			this->labels.define(defLabel,status.line,status.position);
+		}
+		catch(e_exception e)
+		{
+			if(e == eRedefinedLabel)
+			{
+				this->messenger.generateMessage(mRedefinedLabel,&status);
+			}
+		}
+	}
+	//se for uma instrucao, monta-a
+	int size;
+	if(this->inst.isInstruction(mnemonic))
+	{
+		printf("Inst:%s\n",mnemonic.c_str());
+		try
+		{
+			this->inst.assemble(mnemonic,operands,memory,this->addr,this->labels,this->regs);
+		}
+		catch(e_exception e)
+		{
+			this->messenger.generateMessage(Messenger::exceptionToMessage(e),&status);
+		}
+	}
+	//executa a diretiva
+	else
+	{
+		try
+		{
+			byte = this->directives.execute(mnemonic,operands,memory,byte);
+		}
+		catch(e_exception e)
+		{
+			switch(e)
+			{
+				case eUnknownMnemonic:
+					this->messenger.generateMessage(mUnknownInstruction,&status);
+					break;
+				case eIncorrectOperands:
+					this->messenger.generateMessage(mIncorrectOperands,&status);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	printf("Line:%s\n",line.c_str());
+	printf("Defined Label: %s\n",defLabel.c_str());
+	printf("Instruction: %s\n",mnemonic.c_str());
+	printf("Operands: %s\n",operands.c_str());
+	printf("\n\n*********\n");
+	//getchar();
+
+	return byte;
 }
 
 /**
@@ -340,79 +430,6 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 		else
 			*operands= line.substr(b,i-b);
 	}
-}
-
-/**
-*	monta uma linha, escrevendo seu codigo binario a partir de memory[byte]
-* line eh a linha a ser montada
-* se houver alguma label que ainda nao foi definida, reserva espaco e adiciona a pendencia na pilha
-* se for encontrada a definicao de uma label, acrescenta-a as Labels conhecidas
-* retorna a posicao da memoria em que a proxima linha deve comecar
-*/
-unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int byte,unsigned int lineNumber)
-{
-
-	t_status status;
-	status.line = lineNumber;
-	status.position = byte;
-	string defLabel;
-	string mnemonic;
-	string operands;
-	this->parseLine(line,&defLabel,&mnemonic,&operands);
-	status.label = defLabel;
-	status.mnemonic = mnemonic;
-	status.operand = operands;
-	//define a label
-	if(defLabel!="")
-	{
-		try
-		{
-			this->labels.define(defLabel,status.line,status.position);
-		}
-		catch(e_exception e)
-		{
-			if(e == eRedefinedLabel)
-			{
-				status.firstDefinition = this->labels.line(defLabel);
-				this->messenger.generateMessage(mRedefinedLabel,&status);
-			}
-		}
-	}
-	//se for uma instrucao, monta-a
-	int size;
-	if(this->inst.isInstruction(mnemonic))
-	{
-		this->inst.assemble(mnemonic,operands,&size,this->addr,this->labels,this->regs);
-	}
-	//executa a diretiva
-	else
-		try
-		{
-			byte = this->directives.execute(mnemonic,operands,memory,byte);
-		}
-		catch(e_exception e)
-		{
-			switch(e)
-			{
-				case eUnknownMnemonic:
-					this->messenger.generateMessage(mUnknownInstruction,&status);
-					break;
-				case eIncorrectOperands:
-					this->messenger.generateMessage(mIncorrectOperands,&status);
-					break;
-				default:
-					break;
-			}
-		}
-
-	printf("Line:%s\n",line.c_str());
-	printf("Defined Label: %s\n",defLabel.c_str());
-	printf("Instruction: %s\n",mnemonic.c_str());
-	printf("Operands: %s\n",operands.c_str());
-	printf("\n\n*********\n");
-	getchar();
-
-	return byte;
 }
 
 /**

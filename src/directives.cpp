@@ -33,26 +33,26 @@ unsigned int Directives::execute(string directive,string operands,Memory *memory
 {
 	Number n;
 	//muda o proximo byte par amontagem
-	if(stringCaselessCompare(directive,"org"))
+	if(stringCaselessCompare(directive,"org")==0)
 	{
 		//o operando deve ser um numero
 		return n.toInt(operands);
 	}
-	else if(stringCaselessCompare(directive,"db"))
+	else if(stringCaselessCompare(directive,"db")==0)
 	{
 		int value = n.toInt(operands);
 		memory->writeValue((unsigned char)value,currentByte);
 		currentByte++;
 	}
-	else if(stringCaselessCompare(directive,"dw"))
+	else if(stringCaselessCompare(directive,"dw")==0)
 	{
 
 	}
-	else if(stringCaselessCompare(directive,"dab"))
+	else if(stringCaselessCompare(directive,"dab")==0)
 	{
 
 	}
-	else if(stringCaselessCompare(directive,"daw"))
+	else if(stringCaselessCompare(directive,"daw")==0)
 	{
 
 	}
@@ -66,15 +66,15 @@ unsigned int Directives::execute(string directive,string operands,Memory *memory
 bool Directives::isDirective(string directive)
 {
 
-	if(stringCaselessCompare(directive,"org"))
+	if(stringCaselessCompare(directive,"org")==0)
 		return true;
-	else if(stringCaselessCompare(directive,"db"))
+	else if(stringCaselessCompare(directive,"db")==0)
 		return true;
-	else if(stringCaselessCompare(directive,"dw"))
+	else if(stringCaselessCompare(directive,"dw")==0)
 		return true;
-	else if(stringCaselessCompare(directive,"dab"))
+	else if(stringCaselessCompare(directive,"dab")==0)
 		return true;
-	else if(stringCaselessCompare(directive,"daw"))
+	else if(stringCaselessCompare(directive,"daw")==0)
 		return true;
 	return false;
 }

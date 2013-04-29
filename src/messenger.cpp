@@ -26,11 +26,13 @@
 #include "stringer.hpp"
 #include "file.hpp"
 
+#include "debug.hpp"
+
 #define LOG102 0.30102999566398119801746702250966
 
 //log10(2^s) = s*log10(2)
 //+2 por causa do sinal e do \0
-#define MAXDIGITS (unsigned int)(sizeof(char)*8*LOG102+2)
+#define MAXDIGITS (unsigned int)(sizeof(int)*8*LOG102+2)
 
 
 using namespace std;
@@ -137,7 +139,9 @@ void Messenger::load(const char *filename)
 */
 void Messenger::generateMessage(unsigned int code,t_status *status)
 {
+	ERR("generating message...\n");
 	this->updateVariables(status);
+	ERR("updated vars\n");
 
 	map<unsigned int, t_message>::iterator it = this->msgs.find(code);
 	string msg;
@@ -159,9 +163,13 @@ void Messenger::generateMessage(unsigned int code,t_status *status)
 			this->warnings++;
 			stream = this->warningStream;
 		}
+		ERR("replacing...");
 		msg = stringReplaceAll(type + message.message,this->variables) + '\n';
+		ERR("done\n");
 		fwrite(msg.c_str(),1,msg.size(),stream);
 	}
+
+	ERR("DONE!\n");
 
 
 }
@@ -171,7 +179,8 @@ void Messenger::generateMessage(unsigned int code,t_status *status)
 */
 void Messenger::updateVariables(t_status *status)
 {
-
+	ERR("Begin...");
+	ERR("MAXDIGITS: %d\n",(int)MAXDIGITS);
 	char buffer[MAXDIGITS];
 
 	this->variables["$ADDRESSING_MODE"] = status->operand;
@@ -200,6 +209,7 @@ void Messenger::updateVariables(t_status *status)
 
 	sprintf(buffer,"%d",(int)(pow(2,status->operandSize-1)-1));
 	this->variables["$OPERAND_SIZE"] = string(buffer);
+	ERR("End\n");
 }
 
 /**
@@ -210,7 +220,25 @@ unsigned int Messenger::numberErrors()
 	return this->errors;
 }
 
-
+/**
+  * converte uma excecao para seu respectivo codigo
+  */
+e_messages Messenger::exceptionToMessage(e_exception e)
+{
+	switch(e)
+	{
+		case eUnknownMnemonic:
+			return mUnknownInstruction;
+		case eIncorrectOperands:
+			return mIncorrectOperands;
+		case eRedefinedLabel:
+			return mRedefinedLabel;
+		case eUndefinedLabel:
+			return mUndefinedLabel;
+		default:
+			return mUnknownInstruction;
+	}
+}
 
 
 

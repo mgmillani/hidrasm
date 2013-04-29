@@ -28,6 +28,7 @@ class Memory
 	*	inicializa uma memoria com suporte de, pelo menos, size bytes
 	*/
 	Memory(unsigned int size);
+	~Memory();
 
 	/**
 	*	escreve um valor numa determinada posicao da memoria
@@ -55,6 +56,8 @@ class Memory
 	* (por enquanto, eh apenas o dump da memoria, sem nenhuma compactacao)
 	*/
 	unsigned char *pack(unsigned int *size);
+
+	void print(FILE *stream);
 
 	private:
 

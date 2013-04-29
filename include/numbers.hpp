@@ -37,7 +37,7 @@ class Number
 	* h/H - hexadecimal
 	* nada/algarismo - decimal
 	*/
-	int toInt(string n);
+	static int toInt(string n);
 
 	/**
 	*	converte o numero para um array de bytes com notacao little-endian
@@ -48,25 +48,25 @@ class Number
 	*	escreve o numero de bytes do numero em size
 	* nao suporta numeros decimais
 	*/
-	unsigned char *toByteArray(string n, int *size);
+	static unsigned char *toByteArray(string n, int *size);
 
 	/**
 	* determina o tipo do numero (decimal, binario ou hexadecimal),retornando-o
 	* retorna INVALID se o numero nao estiver no formato adequado
 	*/
-	e_numType numberType(string n);
+	static e_numType numberType(string n);
 
 	/**
 	* converte os caracteres do numero para seus respectivos valores
 	* o vetor values deve ser grande o suficiente
 	* o numero n deve ser valido
 	*/
-	void convertDigits(string n, unsigned char *values,e_numType type);
+	static void convertDigits(string n, unsigned char *values,e_numType type);
 
 	/**
 	  * verifica se o dado numero eh valido
 	  */
-	bool exists(string number);
+	static bool exists(string number);
 };
 
 #endif // NUMBERS_HPP

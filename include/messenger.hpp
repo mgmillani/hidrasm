@@ -29,6 +29,8 @@
 #include "machine.hpp"
 #include "labels.hpp"
 
+#include "defs.hpp"
+
 using namespace std;
 
 //OBS: A ordem dos elementos eh MUITO importante e deve corresponder a do arquivo que possui as mensagens
@@ -100,6 +102,11 @@ class Messenger
 	*	retorna o numero de erros que ocorreram
 	*/
 	unsigned int numberErrors();
+
+	/**
+  * converte uma excecao para seu respectivo codigo
+  */
+	static e_messages exceptionToMessage(e_exception e);
 
 	private:
 

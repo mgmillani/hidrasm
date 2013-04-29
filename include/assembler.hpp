@@ -57,8 +57,6 @@ class Assembler
 	  */
 	Assembler(const char *filename);
 
-	//dummy
-	Assembler();
 
 	/**
 	  *	monta o codigo assembly passado

@@ -153,7 +153,7 @@ int Number::toInt(string n)
 	int base;
 	int power = 1;
 	int end = n.size()-1;
-	e_numType type = this->numberType(n);
+	e_numType type = numberType(n);
 	char last = n[end];
 	switch(type)
 	{
@@ -211,7 +211,7 @@ unsigned char *Number::toByteArray(string n, int *size)
 
 	unsigned char values[n.size()];
 	unsigned char *number;
-	e_numType type = this->numberType(n);
+	e_numType type = numberType(n);
 
 	if(type == INVALID || type==DECIMAL)
 	{
@@ -280,7 +280,7 @@ unsigned char *Number::toByteArray(string n, int *size)
 bool Number::exists(string number)
 {
 
-	e_numType num = this->numberType(number);
+	e_numType num = numberType(number);
 	if(num == INVALID)
 		return false;
 	else

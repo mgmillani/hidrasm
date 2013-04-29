@@ -20,16 +20,21 @@
 
 #include <string>
 
+#include <boost/algorithm/string.hpp>
+
 #include "instructions.hpp"
 #include "addressings.hpp"
 #include "registers.hpp"
 #include "expression.hpp"
 #include "operands.hpp"
 #include "multiExpression.hpp"
+#include "memory.hpp"
 #include "labels.hpp"
 #include "numbers.hpp"
 #include "stringer.hpp"
+
 #include "defs.hpp"
+#include "debug.hpp"
 
 using namespace std;
 
@@ -52,7 +57,7 @@ void Instructions::load(string config)
 	inst.size = n.toInt(*(it++));
 
 	if(it==words.end()) throw (eInvalidFormat);
-	inst.mnemonic = *(it++);
+	inst.mnemonic = boost::to_upper_copy(*(it++));
 
 	if(it==words.end()) throw (eInvalidFormat);
 	inst.operandExpression = *(it++);
@@ -74,6 +79,7 @@ void Instructions::load(string config)
 */
 bool Instructions::isInstruction(string mnemonic)
 {
+	boost::to_upper(mnemonic);
 	if(this->insts.find(mnemonic)!=this->insts.end())
 		return true;
 	else
@@ -85,10 +91,11 @@ bool Instructions::isInstruction(string mnemonic)
 * retorna o array com esse codigo
 * escreve o numero de bytes em size
 */
-unsigned char* Instructions::assemble(string mnemonic, string operandsStr,int *size,Addressings addressings,Labels labels, Registers registers)
+void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addressings addressings,Labels labels, Registers registers)
 {
 
 	//busca todas as instrucoes com o dado mnemonico
+	boost::to_upper(mnemonic);
 	map<string,list<t_instruction> >::iterator it = this->insts.find(mnemonic);
 	//se nao encontrou
 	if(it==this->insts.end())
@@ -104,6 +111,7 @@ unsigned char* Instructions::assemble(string mnemonic, string operandsStr,int *s
 	for(jt=matches.begin() ; jt!=matches.end() && !inOk; jt++)
 	{
 		i = *jt;
+		printf("Mnemonic:%s\n",i.mnemonic.c_str());
 
 		list<string>::iterator addr;
 		//cria uma lista com todas as expressoes dos modos de enderecamento
@@ -111,12 +119,32 @@ unsigned char* Instructions::assemble(string mnemonic, string operandsStr,int *s
 		for(addr=i.addressingNames.begin() ; addr!=i.addressingNames.end() ; addr++)
 		{
 			t_addressing a = addressings.getAddressing(*addr);
+			ERR("Expression:%s\n",a.expression.regexpression().c_str());
 			expr.push_back(a.expression);
 		}
 
+		printf("Creating mulex (%s)\n",i.operandExpression.c_str());
 		MultiExpression mulEx(expr,i.operandExpression);
-		list<t_match > matches = mulEx.findAllSub(operandsStr);
-
+		printf("Done\n");
+		list<t_match > matches;
+		bool giveUp = false;
+		try
+		{
+			matches = mulEx.findAllSub(operandsStr);
+		}
+		catch (e_exception e)
+		{
+			if(e==eUnmatchedExpression)
+				printf("Unmatched!\n");
+			giveUp = true;
+		}
+		ERR("give up or not\n");
+		if(giveUp)
+		{
+			ERR("Gave up!\n");
+			continue;
+		}
+		printf("Found sub\n");
 		//verifica se as variaveis sao do tipo adequado
 		list<t_match>::iterator imatch;
 
@@ -187,10 +215,12 @@ unsigned char* Instructions::assemble(string mnemonic, string operandsStr,int *s
 	else
 	{
 		//i contem a ultima instrucao avaliada
-		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,*size);
-		Number n;
-		unsigned char *codeArray = n.toByteArray(code,size);
-		return codeArray;
+		ERR("Replacing operands:\n");
+		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
+		printf("Code:%s\n",code.c_str());
+		printf("Format:%s\n",i.binFormat.c_str());
+		//unsigned char *codeArray = n.toByteArray(code,size);
+		//return codeArray;
 	}
 }
 

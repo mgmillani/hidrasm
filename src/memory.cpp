@@ -16,10 +16,12 @@
 * along with hidrasm.  If not, see <http://www.gnu.org/licenses/>
 */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "memory.hpp"
+
 
 using namespace std;
 
@@ -28,8 +30,14 @@ using namespace std;
 */
 Memory::Memory(unsigned int size)
 {
-	this->area = (unsigned char*)malloc(size);
+	this->area = (unsigned char*)calloc(size,1);
 	this->size = size;
+}
+
+Memory::~Memory()
+{
+	if(this->size>0)
+		free(this->area);
 }
 
 /**
@@ -73,4 +81,18 @@ unsigned char *Memory::pack(unsigned int *size)
 {
 	*size = this->size;
 	return this->area;
+}
+
+/**
+	* escreve todos os valores da memoria na stream dada
+	*/
+void Memory::print(FILE *stream)
+{
+
+	unsigned int i;
+	for(i=0 ; i<this->size ; i++)
+	{
+		fprintf(stream,"%u:\t%d\n",i,(int)this->area[i]);
+	}
+
 }
