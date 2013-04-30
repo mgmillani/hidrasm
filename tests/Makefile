@@ -1,4 +1,4 @@
-CC = g++
+CC = clang
 INCLUDE = ../include
 CFLAGS = -Wall -Wextra -g -I$(INCLUDE)
 SRC = ../src
