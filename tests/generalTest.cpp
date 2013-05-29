@@ -4,14 +4,17 @@
 #include "file.hpp"
 
 const char gDelimiter[] = "############\n";
-const char gConfFile[] = "config";
+const char gConfFile[] = "ramses";
 const char gCodeFile[] = "code.asm";
+const char gMsgFile[] = "messages";
 
 void assemblerTest()
 {
 
+	Messenger messenger(gMsgFile,stdout,stdout);
+
 	printf("%sLoading configuration file:%s",gDelimiter,gDelimiter);
-	Assembler ass(gConfFile);
+	Assembler ass(gConfFile,messenger);
 	ass.print(stdout);
 
 	printf("%sAssembling code\n%s",gDelimiter,gDelimiter);
@@ -27,7 +30,7 @@ void assemblerTest()
 	string code(codeP);
 	Memory mem = ass.assembleCode(code);
 
-	printf("%sGenerated memory\n%s",gDelimiter,gDelimiter);
+	//printf("%sGenerated memory\n%s",gDelimiter,gDelimiter);
 	//mem.print(stdout);
 
 	free(codeP);

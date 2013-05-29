@@ -11,9 +11,9 @@ using namespace std;
 int main(int argc, char*argv[])
 {
 
-	if(argc!=4)
+	if(argc!=3)
 	{
-		printf("usage: mex <expression definition file> <multi expression> <phrase>\n");
+		printf("usage: expression <expression definition file> <phrase>\n");
 		return 1;
 	}
 
@@ -23,7 +23,7 @@ int main(int argc, char*argv[])
 
 	//cria as expressoes
 	list<string>::iterator lines;
-	for(lines=fl.begin() ; lines!=fl.end() ; lines++)=
+	for(lines=fl.begin() ; lines!=fl.end() ; lines++)
 	{
 		exp.push_back(Expression(*lines));
 	}
@@ -31,11 +31,8 @@ int main(int argc, char*argv[])
 	list<pair<string,char> > vars;
 	list<Expression>::iterator it;
 
-	string multiex(argv[2]);
+	string phrase(argv[2]);
 
-
-	string phrase(argv[3]);
-/*
 	//verifica se a frase passda bate com alguma expressao
 	for(it=exp.begin() ; it!=exp.end() ; it++)
 	{
@@ -54,7 +51,7 @@ int main(int argc, char*argv[])
 			printf("Does not match %s\n",it->expression().c_str());
 		}
 	}
-*/
+
 	return 0;
 
 }

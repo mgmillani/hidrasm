@@ -22,8 +22,7 @@
 
 #include "memory.hpp"
 
-
-using namespace std;
+//using namespace std;
 
 /**
 *	inicializa uma memoria com suporte de, pelo menos, size bytes

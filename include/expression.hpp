@@ -64,6 +64,8 @@ class Expression
 	  */
 	string regexpression();
 
+	char *vars;
+
 	private:
 
   /**
@@ -74,10 +76,14 @@ class Expression
 	string exp;
 	string regexStr;
 	boost::regex regexp;
-	char *vars;
+
 
 };
 
+/**
+  * dado o caractere de uma variavel, retorna seu indice
+  */
+e_expVar varToNum(char c);
 
 /**
   * verifica se o caractere passado pode ser parte do nome de uma variavel

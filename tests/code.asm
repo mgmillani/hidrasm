@@ -1,3 +1,3 @@
-STA 123
+nop
 begin:
-	sub 15
+	str A 123

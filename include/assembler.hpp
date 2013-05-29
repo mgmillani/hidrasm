@@ -55,8 +55,7 @@ class Assembler
 	/**
 	  *	le as caracteristicas da arquitetura que estao no arquivo dado
 	  */
-	Assembler(const char *filename);
-
+	Assembler(const char *filename,Messenger messenger);
 
 	/**
 	  *	monta o codigo assembly passado

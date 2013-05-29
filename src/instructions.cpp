@@ -79,7 +79,7 @@ void Instructions::load(string config)
 */
 bool Instructions::isInstruction(string mnemonic)
 {
-	boost::to_upper(mnemonic);
+	//boost::to_upper(mnemonic);
 	if(this->insts.find(mnemonic)!=this->insts.end())
 		return true;
 	else
@@ -113,38 +113,47 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 		i = *jt;
 		printf("Mnemonic:%s\n",i.mnemonic.c_str());
 
-		list<string>::iterator addr;
-		//cria uma lista com todas as expressoes dos modos de enderecamento
-		list<Expression> expr;
-		for(addr=i.addressingNames.begin() ; addr!=i.addressingNames.end() ; addr++)
+		//se nao houver operando e a instrucao nao requer operandos
+		if(operandsStr.size() == 0 && i.addressingNames.front()=="-")
 		{
-			t_addressing a = addressings.getAddressing(*addr);
-			ERR("Expression:%s\n",a.expression.regexpression().c_str());
-			expr.push_back(a.expression);
+			inOk = true;
+			break;
 		}
 
-		printf("Creating mulex (%s)\n",i.operandExpression.c_str());
+		//cria uma lista com todas as expressoes dos modos de enderecamento
+		list<Expression> expr;
+		//se o modo de enderecamento for *, pega todos os modos de enderecamento existentes
+		if(i.addressingNames.front()=="*")
+		{
+			list<t_addressing> addrs = addressings.getAllAddressings();
+			list<t_addressing>::iterator at;
+			for(at=addrs.begin() ; at!=addrs.end() ; at++)
+				expr.push_back(at->expression);
+		}
+		else
+		{
+			list<string>::iterator addr;
+			for(addr=i.addressingNames.begin() ; addr!=i.addressingNames.end() ; addr++)
+			{
+				t_addressing a = addressings.getAddressing(*addr);
+				//ERR("Expression:%s\n",a.expression.regexpression().c_str());
+				expr.push_back(a.expression);
+			}
+		}
+
+		//printf("Creating mulex (%s)\n",i.operandExpression.c_str());
 		MultiExpression mulEx(expr,i.operandExpression);
-		printf("Done\n");
+		//printf("Done\n");
 		list<t_match > matches;
-		bool giveUp = false;
 		try
 		{
 			matches = mulEx.findAllSub(operandsStr);
 		}
 		catch (e_exception e)
 		{
-			if(e==eUnmatchedExpression)
-				printf("Unmatched!\n");
-			giveUp = true;
-		}
-		ERR("give up or not\n");
-		if(giveUp)
-		{
-			ERR("Gave up!\n");
+			ERR("BAD!\n");
 			continue;
 		}
-		printf("Found sub\n");
 		//verifica se as variaveis sao do tipo adequado
 		list<t_match>::iterator imatch;
 
@@ -157,9 +166,13 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 		{
 			opOk = false;
 			t_match m = *imatch;
+			//for(int k=0 ; k<VAR_TOTAL ; k++)
+			//	ERR("Match subtype %d: %d\n",k,(int)m.subtype[k]);
+
 			//determina o tipo do operando
 			if(m.subtype[VAR_REGISTER] || m.subtype[VAR_ANYTHING])
 			{
+				ERR("RA\n");
 				if(registers.exists(m.element))
 				{
 					t_operand op;
@@ -175,8 +188,10 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 			}
 			if(m.subtype[VAR_NUMBER] || m.subtype[VAR_ANYTHING] || m.subtype[VAR_ADDRESS])
 			{
+				ERR("NAA\n");
 				if(number.exists(m.element))
 				{
+					ERR("Is Num\n");
 					t_operand op;
 					op.name = m.element;
 					op.type = 'n';
@@ -190,6 +205,7 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 			}
 			if(m.subtype[VAR_LABEL] || m.subtype[VAR_ANYTHING] || m.subtype[VAR_ADDRESS])
 			{
+				ERR("LAA\n");
 				if(labels.exists(m.element))
 				{
 					t_operand op;
@@ -197,6 +213,7 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 					op.type = 'l';
 					//op.relative = m.relative[VAR_LABEL];
 					op.relative = false;
+					op.value = Number::toBin(labels.value(op.name));
 					op.addressingCode = m.subCode[VAR_LABEL];
 					operands.push_back(op);
 					opOk=true;
@@ -215,7 +232,7 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 	else
 	{
 		//i contem a ultima instrucao avaliada
-		ERR("Replacing operands:\n");
+		ERR("Replacing operands (%lu):\n",operands.size());
 		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
 		printf("Code:%s\n",code.c_str());
 		printf("Format:%s\n",i.binFormat.c_str());
@@ -240,6 +257,13 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 
 	typedef enum {STATE_COPY,STATE_NUM,STATE_REGISTER,STATE_MODE,STATE_ADDRESS,STATE_I_OPERAND,STATE_W_OPERAND} e_state;
 
+	list<t_operand>::iterator ops;
+	for(ops=operands.begin() ; ops!=operands.end() ; ops++)
+	{
+		ERR("Operand: %s\n",ops->name.c_str());
+		ERR("\t %s\n",ops->value.c_str());
+	}
+
 	Operands operand(operands);
 	Number n;
 	e_state state = STATE_COPY;
@@ -257,10 +281,11 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 	unsigned char type;
 
 	unsigned int defSize = 0;	//tamanho padrao dos enderecos
-
-	for(r=w=0 ; r<format.size() && w<size ; r++)
+	const char *formatStr = format.c_str();
+	for(r=w=0 ; r<=format.size() && w<size ; r++)
 	{
-		unsigned char c = format[r];
+		unsigned char c = formatStr[r];
+
 		switch (state)
 		{
 			case STATE_COPY:
@@ -289,8 +314,11 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					number = op.value;
 					//copia o valor
 					unsigned int i;
-					for(i=0 ; i<number.size() -1 ; i++)
+					ERR("Reg: %s\n",number.c_str());
+					for(i=0 ; (i+1)<number.size() ; i++)
+					{
 						result[w++] = number[i];
+					}
 
 					switch(tolower(c))
 					{
@@ -319,7 +347,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					number = op.value;
 					//copia o valor
 					unsigned int i;
-					for(i=0 ; i<number.size() -1 ; i++)
+					for(i=0 ; (i+1)<number.size() ; i++)
 						result[w++] = number[i];
 
 					switch(tolower(c))
@@ -383,6 +411,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					//e adiciona o endereco a lista de enderecos
 					if(type==ADDRESS)
 					{
+						//ERR("Type is address\n");
 						result[w++] = ADDRESS;
 						addresses.push_back(op.value);
 					}
@@ -407,8 +436,8 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 			case STATE_W_OPERAND:
 				{
 					//propaga o sinal, se necessario
-					int k;
-					for(k=0 ; k<(value-((int)number.size()-1)) ; k++)
+					unsigned int k;
+					for(k=0 ; k<(value-number.size()+1) ; k++)
 						result[w++] = op.value[0];
 					//trunca o numero, escrevendo somente os bits menos significativos
 					for(k = value-k ; k<((int)number.size()-1) ; k++)
@@ -440,7 +469,15 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 		}//end switch
 	}
 
-	return "0";
+	//substitui todas as ocorrencias de um ADDRESS pelo respectivo valor
+	ERR("W:%u\n",w);
+	if(addresses.size()>0)
+		defSize = (size-w)/addresses.size()+1;
+	else
+		defSize = 0;
+	ERR("Defsize: %d\n",defSize);
+
+	return result;
 }
 
 /**

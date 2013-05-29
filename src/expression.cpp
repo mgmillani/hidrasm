@@ -155,6 +155,23 @@ string Expression::regexpression()
 }
 
 /**
+  * dado o caractere de uma variavel, retorna seu indice
+  */
+e_expVar varToNum(char c)
+{
+	switch(c)
+	{
+		case 'r': return VAR_REGISTER;
+		case 'a': return VAR_ADDRESS;
+		case 'l': return VAR_LABEL;
+		case 'o': return VAR_ANYTHING;
+		case 'n': return VAR_NUMBER;
+	}
+
+	throw(eInvalidExpressionVariable);
+}
+
+/**
   * verifica se o caractere passado pode ser parte do nome de uma variavel
   */
 bool isVarChar(char c)

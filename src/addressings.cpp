@@ -23,6 +23,8 @@
 #include "addressings.hpp"
 #include "defs.hpp"
 
+#include "debug.hpp"
+
 using namespace std;
 
 Addressings::Addressings()
@@ -127,6 +129,7 @@ void Addressings::load(string config)
 	if(state != STATE_END && !comment)
 	{
 		addr.expStr = config.substr(b,i-b);
+		addr.expression = Expression(addr.expStr);
 	}
 
 	this->addrs[name] = addr;
@@ -167,5 +170,27 @@ void Addressings::printAddressing(t_addressing *a, FILE *stream)
 */
 t_addressing Addressings::getAddressing(string name)
 {
+	ERR("Addr Name:%s\n",name.c_str());
 	return this->addrs.find(name)->second;
 }
+
+/**
+  * retorna uma lista com todos os modos de enderecamento
+  */
+list<t_addressing> Addressings::getAllAddressings()
+{
+	list<t_addressing> addrsList;
+
+	map<string,t_addressing>::iterator it;
+
+	for(it=this->addrs.begin() ; it!=this->addrs.end() ; it++)
+		addrsList.push_back(it->second);
+
+	return addrsList;
+
+}
+
+
+
+
+

@@ -40,7 +40,8 @@ typedef enum Exceptions
 	eUnmatchedExpression,
 	eOpenString,
 	eRedefinedLabel,
-	eUndefinedLabel
+	eUndefinedLabel,
+	eInvalidExpressionVariable
 
 } e_exception;
 

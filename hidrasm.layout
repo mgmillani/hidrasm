@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="debug" />
+	<File name="include/assembler.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="1638" topLine="45" />
+	</File>
+	<File name="include/defs.hpp" open="1" top="0" tabpos="7">
+		<Cursor position="1193" topLine="11" />
+	</File>
+	<File name="include/expression.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="2053" topLine="18" />
+	</File>
+	<File name="include/multiExpression.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="1026" topLine="0" />
+	</File>
+	<File name="include/numbers.hpp" open="1" top="0" tabpos="5">
+		<Cursor position="1322" topLine="31" />
+	</File>
+	<File name="include/operands.hpp" open="1" top="0" tabpos="4">
+		<Cursor position="595" topLine="0" />
+	</File>
+	<File name="src/assembler.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="1589" topLine="45" />
+	</File>
+	<File name="src/expression.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="3755" topLine="99" />
+	</File>
+	<File name="src/instructions.cpp" open="1" top="0" tabpos="2">
+		<Cursor position="5648" topLine="201" />
+	</File>
+	<File name="src/messenger.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="1108" topLine="51" />
+	</File>
+	<File name="src/multiExpression.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="624" topLine="11" />
+	</File>
+	<File name="src/numbers.cpp" open="1" top="1" tabpos="6">
+		<Cursor position="4425" topLine="206" />
+	</File>
+	<File name="src/operands.cpp" open="1" top="0" tabpos="3">
+		<Cursor position="877" topLine="16" />
+	</File>
+</CodeBlocks_layout_file>

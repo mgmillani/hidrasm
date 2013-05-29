@@ -46,6 +46,7 @@
 		<Unit filename="include/messenger.hpp" />
 		<Unit filename="include/multiExpression.hpp" />
 		<Unit filename="include/numbers.hpp" />
+		<Unit filename="include/operands.hpp" />
 		<Unit filename="include/registers.hpp" />
 		<Unit filename="include/sha1.hpp" />
 		<Unit filename="include/stringer.hpp" />
@@ -62,6 +63,7 @@
 		<Unit filename="src/messenger.cpp" />
 		<Unit filename="src/multiExpression.cpp" />
 		<Unit filename="src/numbers.cpp" />
+		<Unit filename="src/operands.cpp" />
 		<Unit filename="src/registers.cpp" />
 		<Unit filename="src/sha1.cpp" />
 		<Unit filename="src/stringer.cpp" />

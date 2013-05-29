@@ -15,10 +15,19 @@
 	  */
 	MultiExpression::MultiExpression(list<Expression> subexpressions,string expression)
 	{
+		//determina quais sao as variaveis das subexpressoes
+		this->numSub = subexpressions.size();
+		this->subvars = (unsigned char *)malloc(this->numSub);
+		list<Expression>::iterator et;
+		unsigned int i=0;
+		for(et=subexpressions.begin() ; et!=subexpressions.end() ; et++,i++)
+		{
+			this->subvars[i] = et->vars[0];
+		}
+
 		//determina o numero de variaveis da expressao
 		unsigned int amount=0;
 		bool escape = false;
-		unsigned int i;
 		for(i=0 ; i<expression.size() ; i++)
 		{
 			if(escape)
@@ -30,7 +39,9 @@
 				escape = true;
 			else if(isReserved(expression[i]))
 				amount++;
+
 		}
+		this->numVars = amount;
 
 		//determina quais sao as variaveis da expressao principal
 		this->vars = (char *)malloc(amount);
@@ -100,11 +111,22 @@
 
 		unsigned int i;
 		list<t_match> vars;
-		for(i=1 ; i<what.size() ; i++)
+
+		for(i=1 ; i<what.size() ; i+=this->numSub+1)
 		{
 			string whatStr = what[i];
-			//vars.push_back(pair<string,char>(what[i],this->vars[i-1]));
-			ERR("Match %d: %s\n",i,whatStr.c_str());
+			t_match m;
+			for(int j=0 ; j<VAR_TOTAL ; j++)
+				m.subtype[j] = 0;
+			m.element = whatStr;
+			//determina o subtipo do elemento encontrado
+			for(unsigned int j=0 ; j<this->numSub ; j++)
+			{
+				if(what[i+j].matched)
+					m.subtype[varToNum(this->subvars[j])] = 1;
+			}
+
+			vars.push_back(m);
 		}
 
 		return vars;

@@ -23,14 +23,17 @@
 
 #include <string>
 
+#include <boost/algorithm/string.hpp>
+
 #include "sha1.hpp"
 
-#include "assembler.hpp"
 #include "instructions.hpp"
 #include "addressings.hpp"
+#include "assembler.hpp"
 #include "registers.hpp"
-#include "machine.hpp"
+#include "messenger.hpp"
 #include "stringer.hpp"
+#include "machine.hpp"
 #include "memory.hpp"
 
 #include "defs.hpp"
@@ -46,7 +49,7 @@ using namespace std;
 /**
 *	le as caracteristicas da arquitetura que estao no arquivo dado
 */
-Assembler::Assembler(const char *filename)
+Assembler::Assembler(const char *filename,Messenger messenger)
 {
 	FILE *fl = fopen(filename,"rb");
 	if(fl == NULL)
@@ -55,7 +58,7 @@ Assembler::Assembler(const char *filename)
 	}
 	else
 	{
-
+		this->messenger = messenger;
 		int size;
 		fseek(fl,0,SEEK_END);
 		size = ftell(fl);
@@ -143,8 +146,6 @@ Assembler::Assembler(const char *filename)
 Memory Assembler::assembleCode(string code)
 {
 	//quebra as linhas
-
-	ERR("Assemble\n");
 	list<string> lines = stringSplitChar(code,"\n\r");
 
 	//aloca espaco suficiente para a memoria
@@ -196,8 +197,6 @@ Memory Assembler::assembleCode(string code)
 unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int byte,unsigned int lineNumber)
 {
 
-	ERR("Assembling line...\n");
-
 	t_status status;
 	status.value = 0;
 	status.lastOrgLine = 0;
@@ -211,6 +210,7 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	string mnemonic;
 	string operands;
 	this->parseLine(line,&defLabel,&mnemonic,&operands);
+	boost::to_upper(mnemonic);
 	status.label = defLabel;
 	status.firstDefinition = 0;
 	status.mnemonic = mnemonic;
@@ -232,12 +232,13 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	}
 	//se for uma instrucao, monta-a
 	int size;
+	string a = mnemonic;
 	if(this->inst.isInstruction(mnemonic))
 	{
 		printf("Inst:%s\n",mnemonic.c_str());
 		try
 		{
-			this->inst.assemble(mnemonic,operands,memory,this->addr,this->labels,this->regs);
+			this->inst.assemble(a,operands,memory,this->addr,this->labels,this->regs);
 		}
 		catch(e_exception e)
 		{
@@ -267,7 +268,7 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 		}
 	}
 
-	printf("Line:%s\n",line.c_str());
+	printf("#######\nLine:%s\n",line.c_str());
 	printf("Defined Label: %s\n",defLabel.c_str());
 	printf("Instruction: %s\n",mnemonic.c_str());
 	printf("Operands: %s\n",operands.c_str());

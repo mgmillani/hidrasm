@@ -4,7 +4,7 @@ SRC = src
 OBJ = obj
 BIN = bin
 INC = include
-OBJECTS = $(OBJ)/main.o $(OBJ)/assembler.o $(OBJ)/stringer.o $(OBJ)/sha1.o $(OBJ)/instructions.o $(OBJ)/addressings.o $(OBJ)/numbers.o $(OBJ)/registers.o $(OBJ)/machine.o $(OBJ)/expression.o $(OBJ)/multiExpression.o $(OBJ)/memory.o $(OBJ)/labels.o $(OBJ)/directives.o
+OBJECTS = $(OBJ)/main.o $(OBJ)/assembler.o $(OBJ)/stringer.o $(OBJ)/sha1.o $(OBJ)/instructions.o $(OBJ)/addressings.o $(OBJ)/numbers.o $(OBJ)/registers.o $(OBJ)/machine.o $(OBJ)/expression.o $(OBJ)/multiexpression.o $(OBJ)/memory.o $(OBJ)/labels.o $(OBJ)/directives.o
 NAME = hidrassembler
 
 all: release

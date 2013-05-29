@@ -15,16 +15,14 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	list<string> *lines = fileReadLines(argv[1]);
+	list<string> lines = fileReadLines(argv[1]);
 	list<string>::iterator it;
 
 	int i =0;
-	for(it=lines->begin() ; it!=lines->end() ; it++,i++)
+	for(it=lines.begin() ; it!=lines.end() ; it++,i++)
 	{
 		printf("%d:\t%s\n",i,(*it).c_str());
 	}
-
-	delete lines;
 
 	return 0;
 

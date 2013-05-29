@@ -24,6 +24,7 @@
 
 #include "numbers.hpp"
 #include "defs.hpp"
+#include "debug.hpp"
 
 using namespace std;
 
@@ -198,6 +199,103 @@ int Number::toInt(string n)
 
 	return val;
 }
+
+/**
+  * converte a string do numero dado para uma string binaria (terminada com 'b')
+  */
+string Number::toBin(string n)
+{
+
+	switch(Number::numberType(n))
+	{
+		case DECIMAL:
+			return n;
+			break;
+		case HEXADECIMAL:
+			{
+				string number = getMinDigits(n);
+				unsigned int size = number.size()*4;
+				//cada caractere representa 4 bits
+				char *result = (char *)malloc(sizeof(*result)*(size+2));
+				result[size] = 'b';
+				result[size+1] = '\0';
+				unsigned int i,j;
+				for(i=0,j=0 ; i<number.size() ; i++,j+=4)
+				{
+					writeHexaDigitAsBin(number[i],result+j);
+				}
+				string end(result);
+				free(result);
+				return end;
+			}
+			break;
+		default:
+			return n;
+	}
+}
+
+string Number::toBin(unsigned int n)
+{
+	unsigned int size = log(n)+1;
+
+	char *result = (char *)malloc(size+2);
+	result[size] = 'b';
+	result[size+1] = '\0';
+
+	unsigned int d;
+	for(d = size; d>0 ; d--)
+	{
+		//1 se n impar, 0 se par
+		result[d] = '0' + (n&1);
+	}
+
+	string end(result);
+	free(result);
+	return end;
+}
+
+/**
+	* escreve o valor binario de um digito hexadecimal em dest
+	*/
+void Number::writeHexaDigitAsBin(char digit, char *dest)
+{
+	unsigned int v;
+	//determina o valor do caractere
+	if(digit>='0' && digit<='9')
+		v = digit - '0';
+	else if(digit>='A' && digit<='F')
+		v = digit - 'A' + 10;
+	else
+		v = digit - 'a' + 10;
+
+	//converte para binario
+	int d;
+	for(d=3; d>=0 ; d--)
+	{
+		//1 se v impar, 0 se v par
+		dest[d] = '0' + (v&1);
+		v = v>>1;
+	}
+}
+
+/**
+	* retorna um string contendo apenas os digitos do numero, sem 0s a esquerda
+	* e sem indicativos de sua base
+	*/
+string Number::getMinDigits(string n)
+{
+	unsigned int i;
+	for(i=0 ; i<n.size() ; i++)
+	{
+
+		if(n[i] != '0')
+			break;
+	}
+	//o ultimo caractere indica a base
+	return n.substr(i,n.size()-i-1);
+
+}
+
 /**
 *	converte o numero para um array de bytes com notacao little-endian
 *	o ultimo caractere determina o tipo do numero:
@@ -282,7 +380,10 @@ bool Number::exists(string number)
 
 	e_numType num = numberType(number);
 	if(num == INVALID)
+	{
+		ERR("NaN: %s\n",number.c_str());
 		return false;
+	}
 	else
 		return true;
 

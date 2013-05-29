@@ -19,6 +19,8 @@
 #ifndef NUMBERS_HPP
 #define NUMBERS_HPP
 
+#include <string>
+
 using namespace std;
 
 typedef enum {BINARY,DECIMAL,HEXADECIMAL,INVALID} e_numType;
@@ -29,38 +31,55 @@ class Number
 	Number();
 
 	/**
-	*	converte o numero para um inteiro
-	*	caso seja maior que um, trunca-o, retornando somente os bits menos significativos
-	* o ultimo caractere determina o tipo do numero:
-	* b/B - binario
-	* d/D - decimal
-	* h/H - hexadecimal
-	* nada/algarismo - decimal
-	*/
+	  *	converte o numero para um inteiro
+	  *	caso seja maior que um, trunca-o, retornando somente os bits menos significativos
+	  * o ultimo caractere determina o tipo do numero:
+	  * b/B - binario
+	  * d/D - decimal
+	  * h/H - hexadecimal
+	  * nada/algarismo - decimal
+	  */
 	static int toInt(string n);
 
 	/**
-	*	converte o numero para um array de bytes com notacao little-endian
-	*	o ultimo caractere determina o tipo do numero:
-	*	b/B - binario
-	*	h/H - hexadecimal
-	*	nada/algarismo - binario
-	*	escreve o numero de bytes do numero em size
-	* nao suporta numeros decimais
-	*/
+	  * converte a string do numero dado para uma string binaria (terminada com 'b')
+	  */
+	static string toBin(string n);
+	static string toBin(unsigned int n);
+
+	/**
+	  * escreve o valor binario de um digito hexadecimal em dest
+	  */
+	static void writeHexaDigitAsBin(char digit, char *dest);
+
+	/**
+	  * retorna um string contendo apenas os digitos do numero, sem 0s a esquerda
+	  * e sem indicativos de sua base
+	  */
+	static string getMinDigits(string n);
+
+	/**
+	  *	converte o numero para um array de bytes com notacao little-endian
+	  *	o ultimo caractere determina o tipo do numero:
+	  *	b/B - binario
+	  *	h/H - hexadecimal
+	  *	nada/algarismo - binario
+	  *	escreve o numero de bytes do numero em size
+	  * nao suporta numeros decimais
+	  */
 	static unsigned char *toByteArray(string n, int *size);
 
 	/**
-	* determina o tipo do numero (decimal, binario ou hexadecimal),retornando-o
-	* retorna INVALID se o numero nao estiver no formato adequado
-	*/
+	  * determina o tipo do numero (decimal, binario ou hexadecimal),retornando-o
+	  * retorna INVALID se o numero nao estiver no formato adequado
+	  */
 	static e_numType numberType(string n);
 
 	/**
-	* converte os caracteres do numero para seus respectivos valores
-	* o vetor values deve ser grande o suficiente
-	* o numero n deve ser valido
-	*/
+	  * converte os caracteres do numero para seus respectivos valores
+	  * o vetor values deve ser grande o suficiente
+	  * o numero n deve ser valido
+	  */
 	static void convertDigits(string n, unsigned char *values,e_numType type);
 
 	/**

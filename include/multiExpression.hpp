@@ -33,8 +33,10 @@ class MultiExpression
 	boost::regex regexp; //a expressao regular utilizada
 	string exp;           //a string da expressao regular
 	string regexStr;
+	unsigned int numVars;//numero de variaveis da expressao principal
+	unsigned int numSub; //numero de subexpressoes
 	char *vars;          //os tipos das variaveis que existem na expressao principal
-	char *subvars;       //os tipos das subvariaveis encontradas ao fazer o match
+	unsigned char *subvars;       //os tipos das subexpressoes existentes
 
 };
 

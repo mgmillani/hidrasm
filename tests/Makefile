@@ -1,8 +1,8 @@
-CC = clang
+CC = g++
 INCLUDE = ../include
 CFLAGS = -Wall -Wextra -g -I$(INCLUDE)
 SRC = ../src
-OBJ = .
+OBJ = obj
 BIN = .
 LIB = -lboost_regex
 OBJECTS = $(OBJ)/directives.o $(OBJ)/addressings.o $(OBJ)/registers.o $(OBJ)/instructions.o $(OBJ)/machine.o $(OBJ)/labels.o $(OBJ)/memory.o $(OBJ)/stringer.o $(OBJ)/numbers.o $(OBJ)/sha1.o $(OBJ)/messenger.o $(OBJ)/expression.o $(OBJ)/multiExpression.o $(OBJ)/assembler.o $(OBJ)/file.o $(OBJ)/operands.o generalTest.o
@@ -19,5 +19,5 @@ $(OBJ)/%.o: $(SRC)/%.cpp
 	$(CC) $(CFLAGS) $< -c -o $@
 
 clean:
-	rm -f *.o
+	rm -f $(OBJ)/*.o
 	rm -f $(NAME)

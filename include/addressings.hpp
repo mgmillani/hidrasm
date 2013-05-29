@@ -44,14 +44,19 @@ class Addressings
 	Addressings();
 
 	/**
-	*	carrega os modos de enderecamento que estao definidos na string config
-	*/
+	  *	carrega os modos de enderecamento que estao definidos na string config
+	  */
 	void load(string config);
 
 	/**
-	*	retorna a estrutura do modo de enderecamento com o nome dado
-	*/
+	  *	retorna a estrutura do modo de enderecamento com o nome dado
+	  */
 	t_addressing getAddressing(string name);
+
+	/**
+	  * retorna uma lista com todos os modos de enderecamento
+	  */
+	list<t_addressing> getAllAddressings();
 
 	/**
 	  * escreve os dados da estrutura em stream
