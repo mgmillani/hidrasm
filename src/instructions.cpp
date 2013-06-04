@@ -145,15 +145,8 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 		MultiExpression mulEx(expr,i.operandExpression);
 		//printf("Done\n");
 		list<t_match > matches;
-		try
-		{
-			matches = mulEx.findAllSub(operandsStr);
-		}
-		catch (e_exception e)
-		{
-			ERR("BAD!\n");
-			continue;
-		}
+
+		matches = mulEx.findAllSub(operandsStr);
 		//verifica se as variaveis sao do tipo adequado
 		list<t_match>::iterator imatch;
 
@@ -166,18 +159,17 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 		{
 			opOk = false;
 			t_match m = *imatch;
-			//for(int k=0 ; k<VAR_TOTAL ; k++)
-			//	ERR("Match subtype %d: %d\n",k,(int)m.subtype[k]);
 
 			//determina o tipo do operando
 			if(m.subtype[VAR_REGISTER] || m.subtype[VAR_ANYTHING])
 			{
-				ERR("RA\n");
+				ERR("Reg or Anything (%s)\n",m.element.c_str());
 				if(registers.exists(m.element))
 				{
 					t_operand op;
 					op.name = m.element;
 					op.type = 'r';
+					op.value = Number::toBin(registers.number(m.element));
 					//op.relative = m.relative[VAR_REGISTER];
 					op.relative = false;
 					op.addressingCode = m.subCode[VAR_REGISTER];
@@ -185,16 +177,19 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 					opOk=true;
 					continue;
 				}
+				else
+					ERR("Not a Register: %s\n",m.element.c_str());
 			}
 			if(m.subtype[VAR_NUMBER] || m.subtype[VAR_ANYTHING] || m.subtype[VAR_ADDRESS])
 			{
-				ERR("NAA\n");
+				ERR("Num Anything Address %s\n",m.element.c_str());
 				if(number.exists(m.element))
 				{
 					ERR("Is Num\n");
 					t_operand op;
 					op.name = m.element;
 					op.type = 'n';
+					op.value = Number::toBin(m.element);
 					//op.relative = m.relative[VAR_NUMBER];
 					op.relative = false;
 					op.addressingCode = m.subCode[VAR_NUMBER];
@@ -202,10 +197,11 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 					opOk=true;
 					continue;
 				}
+				ERR("Not a Number: %s\n",m.element.c_str());
 			}
 			if(m.subtype[VAR_LABEL] || m.subtype[VAR_ANYTHING] || m.subtype[VAR_ADDRESS])
 			{
-				ERR("LAA\n");
+				ERR("Label Anything Address %s\n",m.element.c_str());
 				if(labels.exists(m.element))
 				{
 					t_operand op;
@@ -261,7 +257,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 	for(ops=operands.begin() ; ops!=operands.end() ; ops++)
 	{
 		ERR("Operand: %s\n",ops->name.c_str());
-		ERR("\t %s\n",ops->value.c_str());
+		ERR("value:\t %s\n",ops->value.c_str());
 	}
 
 	Operands operand(operands);

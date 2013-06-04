@@ -33,6 +33,7 @@ typedef struct s_match
 	unsigned char subtype[VAR_TOTAL]; //tipo da variavel nas subexpressoes
 	string element;	//a variavel encontrada
 	string subCode[VAR_TOTAL]; //codigo da subexpressao
+	list<unsigned int> indexes; //os indices das subexpressoes matched
 }t_match;
 
 class Expression

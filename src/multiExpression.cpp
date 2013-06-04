@@ -86,7 +86,7 @@
 				regexStr += c;
 			}
 			//qualquer sequencia (0 ou mais) de brancos
-			regexStr += "[[:blank:]]*";
+			regexStr += "(?:[[:blank:]]*)";
 			escape = false;
 		}
 
@@ -112,18 +112,30 @@
 		unsigned int i;
 		list<t_match> vars;
 
-		for(i=1 ; i<what.size() ; i+=this->numSub+1)
+
+		for(i=0 ; i<what.size() ; i++)
 		{
 			string whatStr = what[i];
+			ERR("Match %d: (%s)\n",i,whatStr.c_str());
+		}
+
+
+		for(i=2 ; i<what.size() ; i+=this->numSub+1)
+		{
 			t_match m;
 			for(int j=0 ; j<VAR_TOTAL ; j++)
 				m.subtype[j] = 0;
-			m.element = whatStr;
 			//determina o subtipo do elemento encontrado
 			for(unsigned int j=0 ; j<this->numSub ; j++)
 			{
 				if(what[i+j].matched)
+				{
+					string whatStr = what[i+j];
+					m.element = whatStr;
+					ERR("%d matched with %s\n",i+j,whatStr.c_str());
 					m.subtype[varToNum(this->subvars[j])] = 1;
+					m.indexes.push_back(j);
+				}
 			}
 
 			vars.push_back(m);

@@ -29,6 +29,7 @@ using namespace std;
 typedef struct s_register
 {
 	string name;
+	string index;
 }t_register;
 
 class	Registers
@@ -45,9 +46,9 @@ class	Registers
 
 	/**
 	*	retorna o numero do registrador caso ele exista,
-	* -1 caso nao exista
+	* string vazia caso nao exista
 	*/
-	int number(string regName);
+	string number(string regName);
 
 	/**
 	  * verifica se um registrador existe ou nao

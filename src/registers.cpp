@@ -39,23 +39,31 @@ void Registers::load(string config)
 {
 
 	list<string> words = stringReadWords(config,"",'\0','#');
-	if(words.size() != 1)
+	if(words.size() != 2)
 		throw(eInvalidFormat);
 
-	t_register r;
-	r.name = *(words.begin());
+	list<string>::iterator it = words.begin();
 
+	t_register r;
+	r.name = *(it++);
+	r.index = *(it++);
+
+	fprintf(stderr,"Added register: (%s)\n",r.name.c_str());
 	this->regs[r.name] = r;
 
 }
 
 /**
 *	retorna o numero do registrador caso ele exista,
-* -1 caso nao exista
+* string vazia caso nao exista
 */
-int Registers::number(string regName)
+string Registers::number(string regName)
 {
-	return 0;
+	map<string,t_register>::iterator it = this->regs.find(regName);
+	if(it == this->regs.end())
+		return string();
+	else
+		return it->second.index;
 }
 
 /**
@@ -63,7 +71,10 @@ int Registers::number(string regName)
 	*/
 bool Registers::exists(string regName)
 {
-	return true;
+	if(this->regs.find(regName) == this->regs.end())
+		return false;
+	else
+		return true;
 }
 
 /**

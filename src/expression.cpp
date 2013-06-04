@@ -133,7 +133,7 @@ void Expression::init(string expression)
 			regexp += c;
 		}
 		//qualquer sequencia (0 ou mais) de brancos
-		regexp += "[[:blank:]]*";
+		regexp += "(?:[[:blank:]]*)";
 		escape = false;
 	}
 

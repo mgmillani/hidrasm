@@ -125,15 +125,16 @@ Cada máquina é especificada em um arquivo, o qual contém as seguintes seçõe
 		Descreve cada registrador usado pela máquina que pode aparecer no código assembly, definindo seu identificador.
 		\begin{description}
 		 \item [Identificador] registers
-		 \item [Formato] <nome>
+		 \item [Formato] <nome> <valor>
 		\end{description}
 		onde:
 		\begin{description}
-		 \item [nome] nome do registrador.
+		 \item [nome] nome do registrador (para o código Assembly).
+		 \item [valor] número que indica o valor do registrador (para o código de máquina)
 		\end{description}
 
 		\subsubsection{Exemplo}
-			R0
+			R0 0b
 			
 \section{Expressão}
 \label{expressão}

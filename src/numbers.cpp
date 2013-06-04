@@ -35,6 +35,8 @@ Number::Number(){}
 */
 e_numType Number::numberType(string n)
 {
+	if(n.size()==0)
+		return INVALID;
 	unsigned int end = n.size()-1;
 	char d = n[end];
 	switch(d)
@@ -287,7 +289,6 @@ string Number::getMinDigits(string n)
 	unsigned int i;
 	for(i=0 ; i<n.size() ; i++)
 	{
-
 		if(n[i] != '0')
 			break;
 	}
@@ -381,7 +382,7 @@ bool Number::exists(string number)
 	e_numType num = numberType(number);
 	if(num == INVALID)
 	{
-		ERR("NaN: %s\n",number.c_str());
+		//ERR("NaN: %s\n",number.c_str());
 		return false;
 	}
 	else
