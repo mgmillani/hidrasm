@@ -40,14 +40,19 @@ class	Registers
 	Registers();
 
 	/**
-	*	carrega os registradores que estao definidas na string config
-	*/
+	  *	carrega os registradores que estao definidas na string config
+	  */
 	void load(string config);
 
 	/**
-	*	retorna o numero do registrador caso ele exista,
-	* string vazia caso nao exista
-	*/
+    * garante que todos os registradores possuam o numero certo de digitos
+    */
+	void adjustRegistersIndexes();
+
+	/**
+	  *	retorna o numero do registrador caso ele exista,
+	  * string vazia caso nao exista
+	  */
 	string number(string regName);
 
 	/**

@@ -25,10 +25,9 @@
 #include "messenger.hpp"
 #include "stringer.hpp"
 #include "file.hpp"
+#include "defs.hpp"
 
 #include "debug.hpp"
-
-#define LOG102 0.30102999566398119801746702250966
 
 //log10(2^s) = s*log10(2)
 //+2 por causa do sinal e do \0

@@ -17,13 +17,17 @@
 */
 
 #include <stdio.h>
+#include <math.h>
 
 #include <string>
 #include <list>
 
 #include "registers.hpp"
 #include "stringer.hpp"
+#include "numbers.hpp"
 #include "defs.hpp"
+
+#include "debug.hpp"
 
 using namespace std;
 
@@ -46,11 +50,36 @@ void Registers::load(string config)
 
 	t_register r;
 	r.name = *(it++);
-	r.index = *(it++);
+	//o indice deve ser em binario
+	r.index = Number::toBin(*(it++));
 
-	fprintf(stderr,"Added register: (%s)\n",r.name.c_str());
 	this->regs[r.name] = r;
 
+	this->adjustRegistersIndexes();
+
+}
+
+/**
+  * garante que todos os registradores possuam o numero certo de digitos
+  */
+void Registers::adjustRegistersIndexes()
+{
+	map<string,t_register>::iterator it;
+	unsigned int numDigits = floor(log10((double)this->regs.size())/LOG102)+1;
+	for(it=this->regs.begin() ; it!=this->regs.end() ; it++)
+	{
+		//garante que o indice do registrador possui o numero correto de digitos
+		t_register r = it->second;
+
+		if(numDigits - (r.index.size()-1) > 0)
+		{
+			string leftZeroes(numDigits-r.index.size()+1,'0');
+			r.index = leftZeroes.append(r.index);
+		}
+
+		string name = it->first;
+		this->regs[name] = r;
+	}
 }
 
 /**

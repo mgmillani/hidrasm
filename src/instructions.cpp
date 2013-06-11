@@ -313,6 +313,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					ERR("Reg: %s\n",number.c_str());
 					for(i=0 ; (i+1)<number.size() ; i++)
 					{
+						ERR("Reg W:%u\ti:%d\n",w,i);
 						result[w++] = number[i];
 					}
 
@@ -344,7 +345,11 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					//copia o valor
 					unsigned int i;
 					for(i=0 ; (i+1)<number.size() ; i++)
+					{
+						ERR("Mode W:%u\ti:%d\n",w,i);
 						result[w++] = number[i];
+					}
+
 
 					switch(tolower(c))
 					{
@@ -437,7 +442,10 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 						result[w++] = op.value[0];
 					//trunca o numero, escrevendo somente os bits menos significativos
 					for(k = value-k ; k<((int)number.size()-1) ; k++)
+					{
+						ERR("Operand W:%u\tk:%u\n",w,k);
 						result[w++] = op.value[k];
+					}
 				}
 				//determina o proximo estado
 				switch(tolower(c))
@@ -466,9 +474,19 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 	}
 
 	//substitui todas as ocorrencias de um ADDRESS pelo respectivo valor
-	ERR("W:%u\n",w);
+	ERR("Last Write:%u\n",w);
 	if(addresses.size()>0)
+	{
 		defSize = (size-w)/addresses.size()+1;
+		r=w=0;
+		list<string>::iterator ad;
+		for(ad=addresses.begin() ; ad!=addresses.end() ; ad++)
+		{
+			//busca o proximo ADDRESS
+			while(result[r]!=ADDRESS)
+				r++;
+		}
+	}
 	else
 		defSize = 0;
 	ERR("Defsize: %d\n",defSize);

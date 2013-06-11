@@ -19,7 +19,8 @@
 #ifndef DEFS_HPP
 #define DEFS_HPP
 
-#define LOG10 1.301029995663981195
+#define LOG210 1.301029995663981195
+#define LOG102 0.30102999566398119801746702250966
 
 #define ISWHITESPACE(c) ((c)==' ' || (c)=='\t')
 #define ISEOL(c) ((c)=='\r' || (c)=='\n')
