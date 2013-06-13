@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "numbers.hpp"
 #include "memory.hpp"
 
 //using namespace std;
@@ -91,7 +92,7 @@ void Memory::print(FILE *stream)
 	unsigned int i;
 	for(i=0 ; i<this->size ; i++)
 	{
-		fprintf(stream,"%u:\t%d\n",i,(int)this->area[i]);
+		fprintf(stream,"%u:\t%d\t%s\n",i,(int)this->area[i],Number::toBin(this->area[i]).c_str());
 	}
 
 }

@@ -67,7 +67,7 @@ class Number
 	  *	escreve o numero de bytes do numero em size
 	  * nao suporta numeros decimais
 	  */
-	static unsigned char *toByteArray(string n, int *size);
+	static unsigned char *toByteArray(string n, unsigned int *size);
 
 	/**
 	  * determina o tipo do numero (decimal, binario ou hexadecimal),retornando-o

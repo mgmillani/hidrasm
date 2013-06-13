@@ -21,9 +21,12 @@
 
 #define LOG210 1.301029995663981195
 #define LOG102 0.30102999566398119801746702250966
+#define LOG2(n) (log10((double)n)/LOG102)
 
 #define ISWHITESPACE(c) ((c)==' ' || (c)=='\t')
 #define ISEOL(c) ((c)=='\r' || (c)=='\n')
+
+#define ISADDRESS(t) ((t)==ADDRESS || (t)==NUMBER || (t)==LABEL)
 
 #define REGISTER   'r'
 #define OPERAND    'o'

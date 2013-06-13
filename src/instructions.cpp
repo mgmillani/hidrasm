@@ -87,11 +87,10 @@ bool Instructions::isInstruction(string mnemonic)
 }
 
 /**
-*	gera o codigo binario de uma instrucao usando notacao little-endian
-* retorna o array com esse codigo
-* escreve o numero de bytes em size
-*/
-void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addressings addressings,Labels labels, Registers registers)
+  *	gera o codigo binario de uma instrucao, escrevendo-o na memoria
+  * retorna o numero de bytes escritos na memoria
+  */
+unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,unsigned int pos,Addressings addressings,Labels labels, Registers registers)
 {
 
 	//busca todas as instrucoes com o dado mnemonico
@@ -111,7 +110,6 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 	for(jt=matches.begin() ; jt!=matches.end() && !inOk; jt++)
 	{
 		i = *jt;
-		printf("Mnemonic:%s\n",i.mnemonic.c_str());
 
 		//se nao houver operando e a instrucao nao requer operandos
 		if(operandsStr.size() == 0 && i.addressingNames.front()=="-")
@@ -136,14 +134,11 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 			for(addr=i.addressingNames.begin() ; addr!=i.addressingNames.end() ; addr++)
 			{
 				t_addressing a = addressings.getAddressing(*addr);
-				//ERR("Expression:%s\n",a.expression.regexpression().c_str());
 				expr.push_back(a.expression);
 			}
 		}
 
-		//printf("Creating mulex (%s)\n",i.operandExpression.c_str());
 		MultiExpression mulEx(expr,i.operandExpression);
-		//printf("Done\n");
 		list<t_match > matches;
 
 		matches = mulEx.findAllSub(operandsStr);
@@ -177,15 +172,12 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 					opOk=true;
 					continue;
 				}
-				else
-					ERR("Not a Register: %s\n",m.element.c_str());
 			}
 			if(m.subtype[VAR_NUMBER] || m.subtype[VAR_ANYTHING] || m.subtype[VAR_ADDRESS])
 			{
 				ERR("Num Anything Address %s\n",m.element.c_str());
 				if(number.exists(m.element))
 				{
-					ERR("Is Num\n");
 					t_operand op;
 					op.name = m.element;
 					op.type = 'n';
@@ -197,7 +189,6 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 					opOk=true;
 					continue;
 				}
-				ERR("Not a Number: %s\n",m.element.c_str());
 			}
 			if(m.subtype[VAR_LABEL] || m.subtype[VAR_ANYTHING] || m.subtype[VAR_ADDRESS])
 			{
@@ -228,10 +219,13 @@ void Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,Addr
 	else
 	{
 		//i contem a ultima instrucao avaliada
-		ERR("Replacing operands (%lu):\n",operands.size());
 		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
 		printf("Code:%s\n",code.c_str());
 		printf("Format:%s\n",i.binFormat.c_str());
+		unsigned int numBytes;
+		unsigned char *array = Number::toByteArray(code,&numBytes);
+		mem->writeArray(array,numBytes,pos);
+		return numBytes;
 		//unsigned char *codeArray = n.toByteArray(code,size);
 		//return codeArray;
 	}
@@ -254,11 +248,6 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 	typedef enum {STATE_COPY,STATE_NUM,STATE_REGISTER,STATE_MODE,STATE_ADDRESS,STATE_I_OPERAND,STATE_W_OPERAND} e_state;
 
 	list<t_operand>::iterator ops;
-	for(ops=operands.begin() ; ops!=operands.end() ; ops++)
-	{
-		ERR("Operand: %s\n",ops->name.c_str());
-		ERR("value:\t %s\n",ops->value.c_str());
-	}
 
 	Operands operand(operands);
 	Number n;
@@ -310,10 +299,8 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					number = op.value;
 					//copia o valor
 					unsigned int i;
-					ERR("Reg: %s\n",number.c_str());
 					for(i=0 ; (i+1)<number.size() ; i++)
 					{
-						ERR("Reg W:%u\ti:%d\n",w,i);
 						result[w++] = number[i];
 					}
 
@@ -346,7 +333,6 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					unsigned int i;
 					for(i=0 ; (i+1)<number.size() ; i++)
 					{
-						ERR("Mode W:%u\ti:%d\n",w,i);
 						result[w++] = number[i];
 					}
 
@@ -412,7 +398,6 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					//e adiciona o endereco a lista de enderecos
 					if(type==ADDRESS)
 					{
-						//ERR("Type is address\n");
 						result[w++] = ADDRESS;
 						addresses.push_back(op.value);
 					}
@@ -443,7 +428,6 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					//trunca o numero, escrevendo somente os bits menos significativos
 					for(k = value-k ; k<((int)number.size()-1) ; k++)
 					{
-						ERR("Operand W:%u\tk:%u\n",w,k);
 						result[w++] = op.value[k];
 					}
 				}
@@ -474,10 +458,9 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 	}
 
 	//substitui todas as ocorrencias de um ADDRESS pelo respectivo valor
-	ERR("Last Write:%u\n",w);
 	if(addresses.size()>0)
 	{
-		defSize = (size-w)/addresses.size()+1;
+		defSize = 1+ (size-w)/addresses.size();
 		r=w=0;
 		list<string>::iterator ad;
 		for(ad=addresses.begin() ; ad!=addresses.end() ; ad++)
@@ -485,11 +468,23 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 			//busca o proximo ADDRESS
 			while(result[r]!=ADDRESS)
 				r++;
+			number = Number::toBin(*ad);
+			ERR("Number: %s\n",number.c_str());
+			//escreve o valor binario, ajustando para o tamanho adequado
+			w = r;
+			unsigned int i;
+			for(i=0 ; i < defSize - (number.size()-1) ; i++)
+				result[w++] = '0';
+			unsigned int k=0;
+			while(i<defSize)
+			{
+				result[w++] = number[k++];
+				i++;
+			}
 		}
 	}
 	else
 		defSize = 0;
-	ERR("Defsize: %d\n",defSize);
 
 	return result;
 }

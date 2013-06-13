@@ -211,7 +211,11 @@ string Number::toBin(string n)
 	switch(Number::numberType(n))
 	{
 		case DECIMAL:
-			return n;
+			{
+				int num = toInt(n);
+				string val = toBin((unsigned int)num);
+				return val;
+			}
 			break;
 		case HEXADECIMAL:
 			{
@@ -238,19 +242,22 @@ string Number::toBin(string n)
 
 string Number::toBin(unsigned int n)
 {
-	unsigned int size = log(n)+1;
+	unsigned int size = LOG2(n)+1;
 
 	char *result = (char *)malloc(size+2);
 	result[size] = 'b';
 	result[size+1] = '\0';
 
-	unsigned int d;
-	for(d = size; d>0 ; d--)
+	int d;
+	for(d = size-1; d>=0 ; d--)
 	{
 		//1 se n impar, 0 se par
 		result[d] = '0' + (n&1);
+		n>>=1;
 	}
 
+	result[size] = 'b';
+	result[size+1] = '\0';
 	string end(result);
 	free(result);
 	return end;
@@ -292,8 +299,13 @@ string Number::getMinDigits(string n)
 		if(n[i] != '0')
 			break;
 	}
-	//o ultimo caractere indica a base
-	return n.substr(i,n.size()-i-1);
+	char last = toupper(n[n.size()-1]);
+	//se o ultimo caractere indicar a base
+	if(last == 'D' || last == 'B' || last == 'H')
+		return n.substr(i,n.size()-i-1);
+	else
+		return n.substr(i,n.size()-i);
+
 
 }
 
@@ -305,7 +317,7 @@ string Number::getMinDigits(string n)
 *	escreve o numero de bytes do numero em size
 * nao suporta numeros decimais
 */
-unsigned char *Number::toByteArray(string n, int *size)
+unsigned char *Number::toByteArray(string n, unsigned int *size)
 {
 
 	unsigned char values[n.size()];

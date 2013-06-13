@@ -92,7 +92,6 @@
 
 		this->regexStr = regexStr;
 		this->regexp = boost::regex(regexStr);
-		ERR("MultiExpression regex: %s\n",regexStr.c_str());
 
 	}
 
@@ -116,7 +115,7 @@
 		for(i=0 ; i<what.size() ; i++)
 		{
 			string whatStr = what[i];
-			ERR("Match %d: (%s)\n",i,whatStr.c_str());
+			//ERR("Match %d: (%s)\n",i,whatStr.c_str());
 		}
 
 
@@ -132,7 +131,7 @@
 				{
 					string whatStr = what[i+j];
 					m.element = whatStr;
-					ERR("%d matched with %s\n",i+j,whatStr.c_str());
+					//ERR("%d matched with %s\n",i+j,whatStr.c_str());
 					m.subtype[varToNum(this->subvars[j])] = 1;
 					m.indexes.push_back(j);
 				}

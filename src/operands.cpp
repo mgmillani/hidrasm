@@ -38,12 +38,22 @@ t_operand Operands::getNextOperand(char type)
 			while(this->itAddr != this->operands.end())
 			{
 				if(this->itAddr->type == type)
+				{
 					return *this->itAddr;
+				}
 				this->itAddr++;
+			}
+
+			for(this->itAddr=this->operands.begin() ; this->itAddr!=this->operands.end() ; this->itAddr++)
+			{
+				char typeFound = this->itAddr->type;
+				if(ISADDRESS(typeFound))
+				{
+					return *this->itAddr;
+				}
 			}
 			break;
 		case REGISTER:
-
 			while(this->itReg != this->operands.end())
 			{
 				if(this->itAddr->type == type)

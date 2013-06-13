@@ -238,7 +238,7 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 		printf("Inst:%s\n",mnemonic.c_str());
 		try
 		{
-			this->inst.assemble(a,operands,memory,this->addr,this->labels,this->regs);
+			byte+=this->inst.assemble(a,operands,memory,byte,this->addr,this->labels,this->regs);
 		}
 		catch(e_exception e)
 		{
