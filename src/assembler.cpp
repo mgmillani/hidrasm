@@ -150,7 +150,7 @@ Memory Assembler::assembleCode(string code)
 
 	//aloca espaco suficiente para a memoria
 	int size = pow(2,this->mach.getPCSize());
-	Memory memory(size);
+	Memory memory(size,this->mach.bigEndian);
 
 	unsigned int pos = 0;
 
@@ -220,7 +220,7 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	{
 		try
 		{
-			this->labels.define(defLabel,status.line,status.position);
+			this->labels.define(defLabel,status.position,status.line);
 		}
 		catch(e_exception e)
 		{

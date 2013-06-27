@@ -182,7 +182,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 					op.name = m.element;
 					op.type = 'n';
 					op.value = Number::toBin(m.element);
-					//op.relative = m.relative[VAR_NUMBER];
 					op.relative = false;
 					op.addressingCode = m.subCode[VAR_NUMBER];
 					operands.push_back(op);
@@ -200,6 +199,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 					op.type = 'l';
 					//op.relative = m.relative[VAR_LABEL];
 					op.relative = false;
+					ERR("Label %s value: %u\n",op.name.c_str(),labels.value(op.name));
 					op.value = Number::toBin(labels.value(op.name));
 					op.addressingCode = m.subCode[VAR_LABEL];
 					operands.push_back(op);
@@ -222,13 +222,14 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
 		printf("Code:%s\n",code.c_str());
 		printf("Format:%s\n",i.binFormat.c_str());
-		unsigned int numBytes;
+		/*unsigned int numBytes;
 		unsigned char *array = Number::toByteArray(code,&numBytes);
-		mem->writeArray(array,numBytes,pos);
-		return numBytes;
-		//unsigned char *codeArray = n.toByteArray(code,size);
-		//return codeArray;
+		mem->writeArray(array,numBytes,pos);*/
+
+		return mem->writeNumber(code,pos);;
 	}
+	// esse ponto nunca deve ser executado
+	return 0;
 }
 
 /**
@@ -329,6 +330,8 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				{
 					op = operand.getNextOperand(ADDRESSING);
 					number = op.value;
+					ERR("Number: %s\n",number.c_str());
+					ERR("Mode: %s\n",op.addressingCode.c_str());
 					//copia o valor
 					unsigned int i;
 					for(i=0 ; (i+1)<number.size() ; i++)
@@ -460,6 +463,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 	//substitui todas as ocorrencias de um ADDRESS pelo respectivo valor
 	if(addresses.size()>0)
 	{
+		ERR("Replacing...\n%s\n",result.c_str());
 		defSize = 1+ (size-w)/addresses.size();
 		r=w=0;
 		list<string>::iterator ad;

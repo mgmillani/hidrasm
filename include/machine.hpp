@@ -53,9 +53,8 @@ class	Machine
 	*/
 	void writeValue(int value,unsigned int wordSize,Memory *memory,unsigned int position);
 
-	private:
-
 	bool bigEndian;
+	private:
 	unsigned int pcBits;
 };
 

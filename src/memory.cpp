@@ -23,13 +23,16 @@
 #include "numbers.hpp"
 #include "memory.hpp"
 
+#include "debug.hpp"
+
 //using namespace std;
 
 /**
-*	inicializa uma memoria com suporte de, pelo menos, size bytes
-*/
-Memory::Memory(unsigned int size)
+  *	inicializa uma memoria com suporte de, pelo menos, size bytes
+  */
+Memory::Memory(unsigned int size,bool bigEndian)
 {
+	this->bigEndian = bigEndian;
 	this->area = (unsigned char*)calloc(size,1);
 	this->size = size;
 }
@@ -41,42 +44,65 @@ Memory::~Memory()
 }
 
 /**
-*	escreve um valor numa determinada posicao da memoria
-*/
+  *	escreve um valor numa determinada posicao da memoria
+  */
 void Memory::writeValue(unsigned char value,unsigned int pos)
 {
 	this->area[pos] = value;
 }
 
 /**
-*	escreve todos os valores do array a partir da posicao startPos na memoria
-*/
+  *	escreve todos os valores do array a partir da posicao startPos na memoria
+  */
 void Memory::writeArray(unsigned char *array, unsigned int arraySize, unsigned int startPos)
 {
 	memcpy(this->area+startPos,array,arraySize);
 }
 
 /**
-*	le um o valor que esta na posicao dada da memoria
-*/
+  * escreve um numero a partir de uma determinada posicao
+  * usa a notacao adequada
+  * retorna o numero de bytes escritos
+  */
+unsigned int Memory::writeNumber(string number,unsigned int startPos)
+{
+	unsigned int size;
+	unsigned char *array = Number::toByteArray(number,&size);
+	if(this->bigEndian)
+	{
+		unsigned int i;
+		for(i=0 ; i<size ; i++)
+		{
+			this->area[startPos+i] = array[size-i-1];
+		}
+	}
+	else
+		memcpy(this->area+startPos,array,size);
+	free(array);
+	return size;
+}
+
+/**
+  *	le um o valor que esta na posicao dada da memoria
+  */
 unsigned char Memory::readValue(unsigned int pos)
 {
 	return this->area[pos];
 }
 
 /**
-*	le amount posicoes da memoria a partir da posicao dada, escrevendo os valores em array
-*/
+  *	le amount posicoes da memoria a partir da posicao dada, escrevendo os valores em array
+  */
 void Memory::readArray(unsigned char *array, unsigned int amount, unsigned int pos)
 {
 	memcpy(array,this->area+pos,amount);
 }
 
 /**
-*	retorna uma forma compactada da memoria
-*	o vetor retornado nao deve ser desalocado
-* (por enquanto, eh apenas o dump da memoria, sem nenhuma compactacao)
-*/
+  *	retorna uma forma compactada da memoria
+  *	o vetor retornado nao deve ser desalocado
+  * (por enquanto, eh apenas o dump da memoria, sem nenhuma compactacao)
+  */
 unsigned char *Memory::pack(unsigned int *size)
 {
 	*size = this->size;

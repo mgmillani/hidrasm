@@ -1,9 +1,9 @@
 [registers]
-	A
-	B
-	X
+	A 0b
+	B 1b
+	X 10b
 [machine]
-	little-endian 8
+	big-endian 8
 [addressings]
 	direto = 00b o
 	indireto = 01b a,i
