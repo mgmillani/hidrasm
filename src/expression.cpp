@@ -25,6 +25,7 @@
 
 #include "expression.hpp"
 #include "stringer.hpp"
+#include "types.hpp"
 #include "defs.hpp"
 
 using namespace std;
@@ -154,18 +155,38 @@ string Expression::regexpression()
 	return this->regexStr;
 }
 
+//retorna o primeiro tipo encontrado na subexpressao
+e_type Expression::getExpressionType(string exp)
+{
+	unsigned int i;
+	unsigned int max = exp.size();
+	bool escape = false;
+	for(i=0 ; i<max ; i++)
+	{
+		if(!escape)
+		{
+			if(exp[i] == '\\')
+				escape = true;
+			else if(isReserved(exp[i]))
+				return varToNum(exp[i]);
+		}
+		else
+			escape = false;
+	}
+}
+
 /**
-  * dado o caractere de uma variavel, retorna seu indice
+  * dado o caractere de uma variavel, retorna seu tipo
   */
-e_expVar varToNum(char c)
+e_type varToNum(char c)
 {
 	switch(c)
 	{
-		case 'r': return VAR_REGISTER;
-		case 'a': return VAR_ADDRESS;
-		case 'l': return VAR_LABEL;
-		case 'o': return VAR_ANYTHING;
-		case 'n': return VAR_NUMBER;
+		case 'r': return TYPE_REGISTER;
+		case 'a': return TYPE_ADDRESS;
+		case 'l': return TYPE_LABEL;
+		case 'o': return TYPE_ANYTHING;
+		case 'n': return TYPE_NUMBER;
 	}
 
 	throw(eInvalidExpressionVariable);
@@ -204,3 +225,5 @@ bool isReserved(char c)
 			return false;
 	}
 }
+
+

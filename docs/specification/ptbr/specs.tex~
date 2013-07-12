@@ -91,9 +91,9 @@ Cada máquina é especificada em um arquivo, o qual contém as seguintes seçõe
 		 \item [endereçamento0 \dots] quais modos de endereçamento podem ser usados com essa instrução. * indica qualquer um;
 		 \item [formato binário] como que a instrução é montada. São usados os símbolos:
 			\begin{description}
-			 \item [a{[[n]][(m)]}] n-ésimo endereço (se o n não for informado, são colocados na ordem em que aparecem). m indica quantos bits terá o endereço, sendo desnecessário quando há somente um endereço no formato. Se houver mais de um endereço na expressão, todos usarão o mesmo número de bits caso este não seja informado;
-			 \item [m{[n]}] n-ésimo modo de endereçamento (se o n não for informado, são colocados na ordem em que aparecem);
-			 \item [r{[n]}]  n-ésimo registrador (se o n não for informado, são colocados na ordem em que aparecem);
+			 \item [a{[[n]][(m)]}] n-ésimo endereço (se o n nâo for informado, são colocados na ordem em que aparecem). m indica quantos bits terá o endereço, sendo desnecessário quando há somente um endereço no formato. Se houver mais de um endereço na expressão, todos usarão o mesmo número de bits caso este não seja informado;
+			 \item [m{[n]}] n-ésimo modo de endereçamento (se o n nâo for informado, são colocados na ordem em que aparecem);
+			 \item [r{[n}]  n-ésimo registrador (se o n nâo for informado, são colocados na ordem em que aparecem);
 			 \item [0] bit 0;
 			 \item [1] bit 1;
 			 \item [qualquer outro caractere] ignorado

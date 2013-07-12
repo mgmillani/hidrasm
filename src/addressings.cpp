@@ -54,7 +54,7 @@ void Addressings::load(string config)
 			//le espacos a esquerda
 			case STATE_INI:
 				//comentario
-				if(c=='#')
+				if(c==SYMB_COMMENT)
 					comment = true;
 				else if(!ISWHITESPACE(c))
 				{
@@ -114,11 +114,14 @@ void Addressings::load(string config)
 				if(ISWHITESPACE(c))
 				{
 					addr.expStr = config.substr(b,i-b);
+					addr.type = Expression::getExpressionType(addr.expStr);
+					//ERR("Addr expression:%s\n",addr.expStr.c_str());
+					//ERR("Type: %u\n",addr.type);
 					state = STATE_END;
 				}
 				break;
 			case STATE_END:
-				if(c=='#')
+				if(c==SYMB_COMMENT)
 					comment = true;
 				else if(!ISWHITESPACE(c))
 					throw(eInvalidFormat);
@@ -129,6 +132,9 @@ void Addressings::load(string config)
 	if(state != STATE_END && !comment)
 	{
 		addr.expStr = config.substr(b,i-b);
+		addr.type = Expression::getExpressionType(addr.expStr);
+		//ERR("Addr expression:%s\n",addr.expStr.c_str());
+		//ERR("Type: %u\n",addr.type);
 		addr.expression = Expression(addr.expStr);
 	}
 
@@ -188,6 +194,41 @@ list<t_addressing> Addressings::getAllAddressings()
 
 	return addrsList;
 
+}
+
+/**
+  * dada uma lista de enderecamentos e um tipo, determina qual deles possui o tipo mais restrito que sirva para o tipo dado
+  */
+t_addressing findBestAddressing(list<t_addressing> lst, e_type t)
+{
+	bool found = false;
+	t_addressing best;
+	list<t_addressing>::iterator at;
+	for(at=lst.begin() ; at!=lst.end() ; at++)
+	{
+		if(at->type == t)
+			return *at;
+		//se ja encontrou algum que sirva
+		if(found)
+		{
+			if(isSubtype(t,at->type) && !isSubtype(best.type,at->type))
+				best = *at;
+		}
+		else
+			if(isSubtype(t,at->type))
+			{
+				best = *at;
+				found = true;
+			}
+
+	}
+	if(!found)
+	{
+		//ERR("No addressing for %u found\n",t);
+		throw(eAddressingNotFound);
+	}
+	else
+		return best;
 }
 
 

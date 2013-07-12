@@ -28,6 +28,8 @@
 
 #define ISADDRESS(t) ((t)==ADDRESS || (t)==NUMBER || (t)==LABEL)
 
+#define SYMB_COMMENT ';'
+
 #define REGISTER   'r'
 #define OPERAND    'o'
 #define ADDRESSING 'm'
@@ -45,7 +47,9 @@ typedef enum Exceptions
 	eOpenString,
 	eRedefinedLabel,
 	eUndefinedLabel,
-	eInvalidExpressionVariable
+	eInvalidExpressionVariable,
+	eAddressingNotFound,
+	eOperandNotFound
 
 } e_exception;
 

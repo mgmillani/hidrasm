@@ -12,11 +12,11 @@
 [instructions]
 	[instructions]
 	08 NOP -  - - 0000.0000
-	16 STR ra * - 0001.rma
-	16 LDR ra * - 0010.rma
-	16 ADD ra * - 0011.rma
-	16 OR  ra * - 0100.rma
-	16 AND ra * - 0101.rma
+	16 STR ra * - 0001.rm[1]a
+	16 LDR ra * - 0010.rm[1]a
+	16 ADD ra * - 0011.rm[1]a
+	16 OR  ra * - 0100.rm[1]a
+	16 AND ra * - 0101.rm[1]a
 	08 NOT r direto - 0110.r00
 	16 JMP a  * - 1000.11ma
 	16 JN  a  * - 1001.11ma

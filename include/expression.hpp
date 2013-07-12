@@ -23,22 +23,26 @@
 
 #include <boost/regex.hpp>
 
-typedef enum {VAR_REGISTER,VAR_ADDRESS,VAR_LABEL,VAR_NUMBER,VAR_ANYTHING,VAR_TOTAL} e_expVar;
+#include "types.hpp"
 
 using namespace std;
 
 typedef struct s_match
 {
 	unsigned char type;	//tipo da variavel na expressao
-	unsigned char subtype[VAR_TOTAL]; //tipo da variavel nas subexpressoes
+	unsigned char subtype[TYPE_TOTAL]; //tipo da variavel nas subexpressoes
 	string element;	//a variavel encontrada
-	string subCode[VAR_TOTAL]; //codigo da subexpressao
+	string subCode[TYPE_TOTAL]; //codigo da subexpressao
 	list<unsigned int> indexes; //os indices das subexpressoes matched
 }t_match;
 
 class Expression
 {
 	public:
+
+	//retorna o primeiro tipo encontrado na subexpressao
+	static e_type getExpressionType(string exp);
+
 	Expression();
 	~Expression();
 
@@ -84,7 +88,7 @@ class Expression
 /**
   * dado o caractere de uma variavel, retorna seu indice
   */
-e_expVar varToNum(char c);
+e_type varToNum(char c);
 
 /**
   * verifica se o caractere passado pode ser parte do nome de uma variavel

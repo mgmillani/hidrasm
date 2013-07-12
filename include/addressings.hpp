@@ -25,6 +25,7 @@
 #include <map>
 
 #include "expression.hpp"
+#include "types.hpp"
 
 using namespace std;
 
@@ -33,6 +34,7 @@ typedef struct s_addressing
 	string expStr;
 	Expression expression;
 	string code;
+	e_type type;
 	bool relative;
 }t_addressing;
 
@@ -70,5 +72,10 @@ class Addressings
 	map<string,t_addressing> addrs;	//associa o nome do modo de enderecamento com seus atributos
 
 };
+
+/**
+  * dada uma lista de enderecamentos e um tipo, determina qual deles possui o tipo mais restrito que sirva para o tipo dado
+  */
+t_addressing findBestAddressing(list<t_addressing> lst, e_type);
 
 #endif // ADDRESSINGS_HPP

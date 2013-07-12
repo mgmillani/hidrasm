@@ -46,8 +46,7 @@ void Machine::load(string config)
 	for(i=0 ; i<config.size() ; i++)
 	{
 		char c = config[i];
-		//# -> comentario
-		if(c == '#')
+		if(c == SYMB_COMMENT)
 			break;
 		switch(state)
 		{

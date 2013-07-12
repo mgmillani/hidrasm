@@ -87,7 +87,7 @@ bool Labels::exists(string name)
 {
 
 	map<string,unsigned int>::iterator i = this->lines.find(name);
-	if(i == this->defs.end())
+	if(i == this->lines.end())
 		return false;
 	else
 		return true;

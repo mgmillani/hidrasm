@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "types.hpp"
+
 using namespace std;
 
 typedef struct s_operand
@@ -10,7 +12,7 @@ typedef struct s_operand
 	string name;
 	string addressingCode;	//codigo binario do modo de enderecamento
 	string value;
-	char type;	//r,l ou n
+	e_type type;	//r,l ou n
 	bool relative;
 }t_operand;
 
@@ -23,12 +25,12 @@ class Operands
 	/**
 	  * retorna o proximo operando do tipo dado
 	  */
-	t_operand getNextOperand(char type);
+	t_operand getNextOperand(e_type type);
 
 	/**
 	  * retorna o n-esimo operando do tipo dado
 	  */
-	t_operand getOperandIndex(char type, unsigned int index);
+	t_operand getOperandIndex(e_type type, unsigned int index);
 
 	private:
 	list<t_operand> operands;

@@ -122,7 +122,7 @@
 		for(i=2 ; i<what.size() ; i+=this->numSub+1)
 		{
 			t_match m;
-			for(int j=0 ; j<VAR_TOTAL ; j++)
+			for(int j=0 ; j<TYPE_TOTAL ; j++)
 				m.subtype[j] = 0;
 			//determina o subtipo do elemento encontrado
 			for(unsigned int j=0 ; j<this->numSub ; j++)

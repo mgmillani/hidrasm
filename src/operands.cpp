@@ -20,7 +20,7 @@ Operands::Operands(list<t_operand> ops)
 /**
 	* retorna o proximo operando do tipo dado
 	*/
-t_operand Operands::getNextOperand(char type)
+t_operand Operands::getNextOperand(e_type type)
 {
 	switch(type)
 	{
@@ -61,6 +61,8 @@ t_operand Operands::getNextOperand(char type)
 				this->itReg++;
 			}
 			break;
+		default:
+			break;
 	}
 
 	return this->operands.front();
@@ -70,7 +72,49 @@ t_operand Operands::getNextOperand(char type)
 /**
 	* retorna o n-esimo operando do tipo dado
 	*/
-t_operand Operands::getOperandIndex(char type, unsigned int index)
+t_operand Operands::getOperandIndex(e_type type, unsigned int index)
 {
+	unsigned int i;
+	switch(type)
+	{
+		case ADDRESSING:
+			this->itMode = this->operands.begin();
+
+			for(i=0 ; i<index && this->itMode!=this->operands.end() ; this->itMode++)
+			{
+				if(this->itMode->type == type)
+					i++;
+			}
+			if(i==index)
+				throw(eOperandNotFound);
+			return *this->itMode;
+			break;
+		case ADDRESS:
+			this->itAddr = this->operands.begin();
+
+			for(i=0 ; i<index && this->itAddr!=this->operands.end() ; this->itAddr++)
+			{
+				if(this->itAddr->type == type)
+					i++;
+			}
+			if(i==index)
+				throw(eOperandNotFound);
+			return *this->itAddr;
+			break;
+		case REGISTER:
+			this->itReg = this->operands.begin();
+
+			for(i=0 ; i<index && this->itReg!=this->operands.end() ; this->itReg++)
+			{
+				if(this->itReg->type == type)
+					i++;
+			}
+			if(i==index)
+				throw(eOperandNotFound);
+			return *this->itReg;
+			break;
+		default:
+			break;
+	}
 	return this->operands.front();
 }

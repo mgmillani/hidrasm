@@ -30,8 +30,8 @@ void assemblerTest()
 	string code(codeP);
 	Memory mem = ass.assembleCode(code);
 
-	//printf("%sGenerated memory\n%s",gDelimiter,gDelimiter);
-	//mem.print(stdout);
+	printf("%sGenerated memory\n%s",gDelimiter,gDelimiter);
+	mem.print(stdout);
 
 	free(codeP);
 }

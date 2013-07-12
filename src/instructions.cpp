@@ -32,6 +32,7 @@
 #include "labels.hpp"
 #include "numbers.hpp"
 #include "stringer.hpp"
+#include "types.hpp"
 
 #include "defs.hpp"
 #include "debug.hpp"
@@ -48,7 +49,7 @@ Instructions::Instructions()
 */
 void Instructions::load(string config)
 {
-	list<string> words = stringReadWords(config,"'\"",'\\','#');
+	list<string> words = stringReadWords(config,"'\"",'\\',SYMB_COMMENT);
 
 	list<string>::iterator it=words.begin();
 
@@ -96,9 +97,13 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	//busca todas as instrucoes com o dado mnemonico
 	boost::to_upper(mnemonic);
 	map<string,list<t_instruction> >::iterator it = this->insts.find(mnemonic);
+
 	//se nao encontrou
 	if(it==this->insts.end())
+	{
+		ERR("Mnemonic: (%s)\n",mnemonic.c_str());
 		throw (eUnknownMnemonic);
+	}
 
 	list<t_instruction> matches = it->second;
 	list<t_instruction>::iterator jt;
@@ -120,10 +125,11 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 
 		//cria uma lista com todas as expressoes dos modos de enderecamento
 		list<Expression> expr;
+		list<t_addressing> addrs;
 		//se o modo de enderecamento for *, pega todos os modos de enderecamento existentes
 		if(i.addressingNames.front()=="*")
 		{
-			list<t_addressing> addrs = addressings.getAllAddressings();
+			addrs = addressings.getAllAddressings();
 			list<t_addressing>::iterator at;
 			for(at=addrs.begin() ; at!=addrs.end() ; at++)
 				expr.push_back(at->expression);
@@ -134,6 +140,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			for(addr=i.addressingNames.begin() ; addr!=i.addressingNames.end() ; addr++)
 			{
 				t_addressing a = addressings.getAddressing(*addr);
+				addrs.push_back(a);
 				expr.push_back(a.expression);
 			}
 		}
@@ -154,59 +161,83 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 		{
 			opOk = false;
 			t_match m = *imatch;
+			t_operand op;
+			op.name = m.element;
 
 			//determina o tipo do operando
-			if(m.subtype[VAR_REGISTER] || m.subtype[VAR_ANYTHING])
+			if(m.subtype[TYPE_REGISTER] || m.subtype[TYPE_ANYTHING])
 			{
 				ERR("Reg or Anything (%s)\n",m.element.c_str());
 				if(registers.exists(m.element))
 				{
-					t_operand op;
-					op.name = m.element;
-					op.type = 'r';
+					ERR("Register %s\n",m.element.c_str());
+					op.type = TYPE_REGISTER;
 					op.value = Number::toBin(registers.number(m.element));
-					//op.relative = m.relative[VAR_REGISTER];
-					op.relative = false;
-					op.addressingCode = m.subCode[VAR_REGISTER];
-					operands.push_back(op);
 					opOk=true;
-					continue;
 				}
 			}
-			if(m.subtype[VAR_NUMBER] || m.subtype[VAR_ANYTHING] || m.subtype[VAR_ADDRESS])
+			if(m.subtype[TYPE_NUMBER] || m.subtype[TYPE_ANYTHING] || m.subtype[TYPE_ADDRESS])
 			{
 				ERR("Num Anything Address %s\n",m.element.c_str());
 				if(number.exists(m.element))
 				{
-					t_operand op;
-					op.name = m.element;
-					op.type = 'n';
+					ERR("Feared by name\n");
+					op.type = TYPE_NUMBER;
 					op.value = Number::toBin(m.element);
-					op.relative = false;
-					op.addressingCode = m.subCode[VAR_NUMBER];
-					operands.push_back(op);
 					opOk=true;
-					continue;
+					ERR("Loved by numbers\n");
 				}
 			}
-			if(m.subtype[VAR_LABEL] || m.subtype[VAR_ANYTHING] || m.subtype[VAR_ADDRESS])
+			if(m.subtype[TYPE_LABEL] || m.subtype[TYPE_ANYTHING] || m.subtype[TYPE_ADDRESS])
 			{
 				ERR("Label Anything Address %s\n",m.element.c_str());
 				if(labels.exists(m.element))
 				{
-					t_operand op;
-					op.name = m.element;
-					op.type = 'l';
-					//op.relative = m.relative[VAR_LABEL];
-					op.relative = false;
+					ERR("IS a label\n");
+					op.type = TYPE_LABEL;
 					ERR("Label %s value: %u\n",op.name.c_str(),labels.value(op.name));
 					op.value = Number::toBin(labels.value(op.name));
-					op.addressingCode = m.subCode[VAR_LABEL];
-					operands.push_back(op);
 					opOk=true;
-					continue;
 				}
+				else
+					ERR("Not a label\n");
 			}
+			if(opOk)
+			{
+				ERR("OK!\n");
+				//determina o codigo do modo de enderecamento
+				//filtra os modos de enderecamento nos quais nao houve match
+				list<t_addressing> matchedAddrs;
+				list<t_addressing>::iterator at;
+				at = addrs.begin();
+				unsigned int atpos = 0;
+				list<unsigned int>::iterator it;
+				for(it=m.indexes.begin() ; it!=m.indexes.end() ; it++)
+				{
+					unsigned int pos = *it;
+					if(pos < atpos)
+					{
+						atpos = 0;
+						at = addrs.begin();
+					}
+					while(atpos<pos)
+					{
+						atpos++;
+						at++;
+					}
+					//adiciona o modo de enderecamento com indice encontrado
+					matchedAddrs.push_back(*at);
+				}
+
+				ERR("Searching...\n");
+				t_addressing a = findBestAddressing(matchedAddrs,op.type);
+				op.addressingCode = a.code;
+				ERR("Code: %s\n",op.addressingCode.c_str());
+				op.relative = a.relative;
+				operands.push_back(op);
+			}
+			else
+				ERR("Op not OK!\n");
 		}//end for match
 		//se todos os operandos estao corretos, essa eh a instrucao certa
 		if(opOk)
@@ -219,9 +250,10 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	else
 	{
 		//i contem a ultima instrucao avaliada
+		printf("Format:%s\n",i.binFormat.c_str());
 		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
 		printf("Code:%s\n",code.c_str());
-		printf("Format:%s\n",i.binFormat.c_str());
+
 		/*unsigned int numBytes;
 		unsigned char *array = Number::toByteArray(code,&numBytes);
 		mem->writeArray(array,numBytes,pos);*/
@@ -250,6 +282,9 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 
 	list<t_operand>::iterator ops;
 
+	ERR("Num Ops: %u\n",operands.size());
+	ERR("format: %s\n",format.c_str());
+
 	Operands operand(operands);
 	Number n;
 	e_state state = STATE_COPY;
@@ -264,13 +299,14 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 	result[size] = 'b';
 
 	t_operand op;
-	unsigned char type;
+	e_type type;
 
 	unsigned int defSize = 0;	//tamanho padrao dos enderecos
 	const char *formatStr = format.c_str();
 	for(r=w=0 ; r<=format.size() && w<size ; r++)
 	{
 		unsigned char c = formatStr[r];
+		ERR("%c\n",c);
 
 		switch (state)
 		{
@@ -292,11 +328,11 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					b = r;
 					state = STATE_NUM;
 					nextState = STATE_I_OPERAND;
-					type = REGISTER;
+					type = TYPE_REGISTER;
 				}
 				else
 				{
-					op = operand.getNextOperand(REGISTER);
+					op = operand.getNextOperand(TYPE_REGISTER);
 					number = op.value;
 					//copia o valor
 					unsigned int i;
@@ -324,12 +360,12 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					b = r;
 					state = STATE_NUM;
 					nextState = STATE_I_OPERAND;
-					type = ADDRESSING;
+					type = TYPE_ADDRESSING;
 				}
 				else
 				{
-					op = operand.getNextOperand(ADDRESSING);
-					number = op.value;
+					op = operand.getNextOperand(TYPE_ADDRESSING);
+					number = op.addressingCode;
 					ERR("Number: %s\n",number.c_str());
 					ERR("Mode: %s\n",op.addressingCode.c_str());
 					//copia o valor
@@ -360,11 +396,11 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					b = r;
 					state = STATE_NUM;
 					nextState = STATE_I_OPERAND;
-					type = ADDRESS;
+					type = TYPE_ADDRESS;
 				}
 				else
 				{
-					op = operand.getNextOperand(ADDRESS);
+					op = operand.getNextOperand(TYPE_ADDRESS);
 					number = op.value;
 					//adiciona a lista de enderecos
 					addresses.push_back(number);
@@ -386,8 +422,15 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 
 			//foi informado o indice do operando
 			case STATE_I_OPERAND:
+				ERR("Value: %d\n",value);
 				op = operand.getOperandIndex(type,value);
-				number = op.value;
+				if(type == TYPE_ADDRESS || type == TYPE_REGISTER)
+					number = op.value;
+				else //if(type == TYPE_ADDRESSING)
+					number = op.addressingCode;
+				ERR("I_OPERAND:\n");
+				ERR("Number: %s\n",number.c_str());
+
 				//foi informado o tamanho do operando
 				if(c=='(')
 				{
@@ -399,7 +442,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				{
 					//se for um endereco, apenas escreve um 'a'
 					//e adiciona o endereco a lista de enderecos
-					if(type==ADDRESS)
+					if(type==TYPE_ADDRESS)
 					{
 						result[w++] = ADDRESS;
 						addresses.push_back(op.value);
@@ -425,7 +468,7 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 			case STATE_W_OPERAND:
 				{
 					//propaga o sinal, se necessario
-					unsigned int k;
+					int k;
 					for(k=0 ; k<(value-number.size()+1) ; k++)
 						result[w++] = op.value[0];
 					//trunca o numero, escrevendo somente os bits menos significativos
@@ -471,7 +514,10 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 		{
 			//busca o proximo ADDRESS
 			while(result[r]!=ADDRESS)
+			{
+				ERR("Val: %c\n",result[r]);
 				r++;
+			}
 			number = Number::toBin(*ad);
 			ERR("Number: %s\n",number.c_str());
 			//escreve o valor binario, ajustando para o tamanho adequado

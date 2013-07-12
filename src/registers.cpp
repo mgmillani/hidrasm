@@ -42,7 +42,7 @@ Registers::Registers()
 void Registers::load(string config)
 {
 
-	list<string> words = stringReadWords(config,"",'\0','#');
+	list<string> words = stringReadWords(config,"",'\0',SYMB_COMMENT);
 	if(words.size() != 2)
 		throw(eInvalidFormat);
 
