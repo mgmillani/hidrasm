@@ -26,7 +26,7 @@
 #define ISWHITESPACE(c) ((c)==' ' || (c)=='\t')
 #define ISEOL(c) ((c)=='\r' || (c)=='\n')
 
-#define ISADDRESS(t) ((t)==ADDRESS || (t)==NUMBER || (t)==LABEL)
+#define ISADDRESS(t) ((t)==TYPE_ADDRESS || (t)==TYPE_NUMBER || (t)==TYPE_LABEL)
 
 #define SYMB_COMMENT ';'
 
