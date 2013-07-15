@@ -35,14 +35,6 @@ using namespace std;
 
 typedef enum {CAT_NONE,CAT_INST,CAT_ADDR,CAT_REGI,CAT_MACH} e_category;
 
-typedef struct s_pendency
-{
-	unsigned int byte;
-	string label;
-	bool relative;	//se a label eh relativa ao PC ou nao
-	unsigned int size;	//numero de bytes que devem ser usados para o valor
-}t_pendency;
-
 class Assembler
 {
 
@@ -80,8 +72,8 @@ class Assembler
 
 	private:
 
-	stack<t_pendency> pendecies; //bytes em que ha labels pendentes
-	Labels labels; //labels definidas
+	stack<t_pendency> pendecies; //labels pendentes
+	Labels labels; //labinstructionsels definidas
 	Instructions inst;
 	Registers regs;
 	Addressings addr;

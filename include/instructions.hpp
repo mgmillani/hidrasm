@@ -22,6 +22,7 @@
 #include <stdio.h>
 
 #include <string>
+#include <stack>
 #include <list>
 #include <map>
 
@@ -29,6 +30,7 @@
 #include "registers.hpp"
 #include "operands.hpp"
 #include "labels.hpp"
+#include "defs.hpp"
 #include "memory.hpp"
 
 using namespace std;
@@ -65,7 +67,7 @@ class Instructions
   *	gera o codigo binario de uma instrucao, escrevendo-o na memoria
   * retorna o numero de bytes escritos na memoria
   */
-	unsigned int assemble(string mnemonic, string operands,Memory *mem,unsigned int pos,Addressings addressings,Labels labels, Registers registers);
+	unsigned int assemble(string mnemonic, string operandsStr,Memory *mem,unsigned int pos,stack<t_pendency> *pendencies,Addressings addressings,Labels labels, Registers registers);
 
 	/**
 	  * escreve as caracteristicas do conjunto de instrucoes em stream

@@ -37,6 +37,14 @@
 #define NUMBER     'n'
 #define LABEL      'l'
 
+typedef struct s_pendency
+{
+	unsigned int byte;
+	string label;
+	bool relative;	//se a label eh relativa ao PC ou nao
+	unsigned int size;	//numero de bytes que devem ser usados para o valor
+}t_pendency;
+
 typedef enum Exceptions
 {
 	eFileNotFound,

@@ -91,7 +91,7 @@ bool Instructions::isInstruction(string mnemonic)
   *	gera o codigo binario de uma instrucao, escrevendo-o na memoria
   * retorna o numero de bytes escritos na memoria
   */
-unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,unsigned int pos,Addressings addressings,Labels labels, Registers registers)
+unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,unsigned int pos,stack<t_pendency> *pendencies,Addressings addressings,Labels labels, Registers registers)
 {
 
 	//busca todas as instrucoes com o dado mnemonico
@@ -101,7 +101,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	//se nao encontrou
 	if(it==this->insts.end())
 	{
-		//ERR("Mnemonic: (%s)\n",mnemonic.c_str());
 		throw (eUnknownMnemonic);
 	}
 
@@ -111,10 +110,12 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	t_instruction i;
 
 	list<t_operand> operands;
+	bool hasPendency = false;
 
 	for(jt=matches.begin() ; jt!=matches.end() && !inOk; jt++)
 	{
 		i = *jt;
+		bool potentialLabel = false;
 
 		//se nao houver operando e a instrucao nao requer operandos
 		if(operandsStr.size() == 0 && i.addressingNames.front()=="-")
@@ -160,6 +161,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 		for(imatch=matches.begin() ; imatch!=matches.end() && opOk ; imatch++)
 		{
 			opOk = false;
+			potentialLabel = false;
 			t_match m = *imatch;
 			t_operand op;
 			op.name = m.element;
@@ -191,20 +193,16 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				//ERR("Label Anything Address %s\n",m.element.c_str());
 				if(labels.exists(m.element))
 				{
-					ERR("IS a label\n");
 					op.type = TYPE_LABEL;
 					ERR("Label %s value: %u\n",op.name.c_str(),labels.value(op.name));
 					op.value = Number::toBin(labels.value(op.name));
 					opOk=true;
 				}
 				else
-					ERR("Not a label\n");
+					potentialLabel = true;
 			}
-			if(opOk)
+			if(opOk || potentialLabel)
 			{
-				ERR("OK!\n");
-				ERR("Name: %s\n",op.name.c_str());
-				ERR("Type: %u\n",op.type);
 				//determina o codigo do modo de enderecamento
 				//filtra os modos de enderecamento nos quais nao houve match
 				list<t_addressing> matchedAddrs;
@@ -229,10 +227,15 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 					matchedAddrs.push_back(*at);
 				}
 
-				ERR("Searching...\n");
+				//se for uma label ainda nao definida
+				if(!opOk)
+				{
+					op.type = TYPE_LABEL;
+					hasPendency = true;
+				}
+
 				t_addressing a = findBestAddressing(matchedAddrs,op.type);
 				op.addressingCode = a.code;
-				ERR("Code: %s\n",op.addressingCode.c_str());
 				op.relative = a.relative;
 				operands.push_back(op);
 			}
@@ -247,16 +250,18 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	//se nenhuma instrucao satisfez, a linha esta incorreta
 	if(!inOk)
 		throw(eInvalidFormat);
+	//se houver alguma pendencia, monta a linha depois
+	else if(hasPendency)
+	{
+		t_pendency p;
+
+	}
 	else
 	{
 		//i contem a ultima instrucao avaliada
 		printf("Format:%s\n",i.binFormat.c_str());
 		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
 		printf("Code:%s\n",code.c_str());
-
-		/*unsigned int numBytes;
-		unsigned char *array = Number::toByteArray(code,&numBytes);
-		mem->writeArray(array,numBytes,pos);*/
 
 		return mem->writeNumber(code,pos);;
 	}
@@ -281,9 +286,6 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 	typedef enum {STATE_COPY,STATE_NUM,STATE_REGISTER,STATE_MODE,STATE_ADDRESS,STATE_I_OPERAND,STATE_W_OPERAND} e_state;
 
 	list<t_operand>::iterator ops;
-
-	ERR("Num Ops: %u\n",operands.size());
-	ERR("format: %s\n",format.c_str());
 
 	Operands operand(operands);
 	Number n;
@@ -365,15 +367,10 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				{
 					op = operand.getNextOperand(TYPE_ADDRESSING);
 					number = op.addressingCode;
-					ERR("Number: %s\n",number.c_str());
-					ERR("Mode: %s\n",op.addressingCode.c_str());
 					//copia o valor
 					unsigned int i;
 					for(i=0 ; (i+1)<number.size() ; i++)
-					{
 						result[w++] = number[i];
-					}
-
 
 					switch(tolower(c))
 					{
@@ -400,7 +397,6 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				else
 				{
 					op = operand.getNextOperand(TYPE_ADDRESS);
-					ERR("%s = %s\n",op.name.c_str(),op.value.c_str());
 					number = op.value;
 					//adiciona a lista de enderecos
 					addresses.push_back(number);
@@ -422,15 +418,11 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 
 			//foi informado o indice do operando
 			case STATE_I_OPERAND:
-				ERR("Value: %d\n",value);
 				op = operand.getOperandIndex(type,value);
-				ERR("Name: %s\n",op.name.c_str());
 				if(type == TYPE_ADDRESS || type == TYPE_REGISTER)
 					number = op.value;
 				else //if(type == TYPE_ADDRESSING)
 					number = op.addressingCode;
-				ERR("I_OPERAND:\n");
-				ERR("Number: %s\n",number.c_str());
 
 				//foi informado o tamanho do operando
 				if(c=='(')
@@ -446,7 +438,6 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 					if(type==TYPE_ADDRESS)
 					{
 						result[w++] = ADDRESS;
-						ERR("%s = %s\n",op.name.c_str(),op.value.c_str());
 						addresses.push_back(op.value);
 					}
 					//caso contrario, escreve o valor
@@ -497,15 +488,12 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				//o numero terminou
 				if(c==']' || c==')')
 				{
-					ERR("Number : %s\n",format.substr(b,r-b).c_str());
 					value = n.toInt(format.substr(b,r-b));
 					state = nextState;
 				}
 
 				break;
 		}//end switch
-		ERR("%c\t",c);
-		ERR("%s\n",result.c_str());
 	}
 
 	//substitui todas as ocorrencias de um ADDRESS pelo respectivo valor
@@ -523,7 +511,6 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				r++;
 			}
 			number = Number::toBin(*ad);
-			ERR("Number %s = %s\n",ad->c_str(),number.c_str());
 			//escreve o valor binario, ajustando para o tamanho adequado
 			w = r;
 			unsigned int i;
