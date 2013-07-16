@@ -173,6 +173,7 @@ e_type Expression::getExpressionType(string exp)
 		else
 			escape = false;
 	}
+	return TYPE_NONE;
 }
 
 /**

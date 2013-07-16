@@ -96,6 +96,11 @@ class Assembler
 	  */
 	void parseLine(string line,string *defLabel, string *mnemonic, string *operands);
 
+	/**
+	  * recalcula o valor das labels, retornando uma nova lista de operandos
+	  */
+	list<t_operand> recalculateOperands(list<t_operand> operands);
+
 };
 
 #endif // ASSEMBLER_HPP

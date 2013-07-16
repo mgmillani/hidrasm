@@ -19,6 +19,10 @@
 #ifndef DEFS_HPP
 #define DEFS_HPP
 
+#include <list>
+
+#include "operands.hpp"
+
 #define LOG210 1.301029995663981195
 #define LOG102 0.30102999566398119801746702250966
 #define LOG2(n) (log10((double)n)/LOG102)
@@ -37,12 +41,15 @@
 #define NUMBER     'n'
 #define LABEL      'l'
 
+using namespace std;
+
 typedef struct s_pendency
 {
-	unsigned int byte;
-	string label;
-	bool relative;	//se a label eh relativa ao PC ou nao
-	unsigned int size;	//numero de bytes que devem ser usados para o valor
+	unsigned int byte;  //posicao onde comeca a instrucao
+
+	list<t_operand> operands;
+	string binFormat;   //formato binario da instrucao a ser montada
+	unsigned int size;  //tamanho da instrucao + operandos
 }t_pendency;
 
 typedef enum Exceptions

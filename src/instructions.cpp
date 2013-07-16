@@ -248,13 +248,19 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	}//end for instruction
 
 	//se nenhuma instrucao satisfez, a linha esta incorreta
-	if(!inOk)
+	if(!inOk && !hasPendency)
 		throw(eInvalidFormat);
 	//se houver alguma pendencia, monta a linha depois
 	else if(hasPendency)
 	{
 		t_pendency p;
+		p.byte = pos;
+		p.operands = operands;
+		p.binFormat = i.binFormat;
+		p.size = i.size;
 
+		pendencies->push(p);
+		return i.size/8;
 	}
 	else
 	{
@@ -263,7 +269,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
 		printf("Code:%s\n",code.c_str());
 
-		return mem->writeNumber(code,pos);;
+		return mem->writeNumber(code,pos);
 	}
 	// esse ponto nunca deve ser executado
 	return 0;
@@ -273,7 +279,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
   * substitui os operandos, escrevendo seu valor binario na string
   * em format:
   * r[n] indica o n-esimo registrador. Se n for omitido, segue a ordem em que aparecem
-  * e[n](m) indica o n-esimo endereco. Se n for omitido, segue a ordem em que aparecem. m indica o   tamanho, em bits
+  * a[n](m) indica o n-esimo endereco. Se n for omitido, segue a ordem em que aparecem. m indica o tamanho, em bits
   * m[n] indica o n-esimo modo de enderecamento. Se n for omitido, segue a ordem em que aparecem
   * 1 e 0 indicam os proprios algarismos
   * qualquer outro caractere sera ignorado

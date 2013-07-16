@@ -31,6 +31,7 @@
 #include "addressings.hpp"
 #include "assembler.hpp"
 #include "registers.hpp"
+#include "numbers.hpp"
 #include "messenger.hpp"
 #include "stringer.hpp"
 #include "machine.hpp"
@@ -159,7 +160,7 @@ Memory Assembler::assembleCode(string code)
 	//monta cada linha
 	for(it=lines.begin() ; it!=lines.end() ; it++,line++)
 	{
-		ERR("Assembling line: %s\n",(*it).c_str());
+		//ERR("Assembling line: %s\n",(*it).c_str());
 		pos = this->assembleLine(*it,&memory,pos,line);
 	}
 
@@ -169,18 +170,14 @@ Memory Assembler::assembleCode(string code)
 		t_pendency pend = this->pendecies.top();
 		this->pendecies.pop();
 
-		//valor da label
-		unsigned int value = this->labels.value(pend.label);
-		//se for relativo ao PC, calcula a distancia
-		if(pend.relative)
-		{
-			int distance = value-pend.byte;
-			this->mach.writeValue(distance,pend.size,&memory,pend.byte);
-		}
-		else
-		{
-			this->mach.writeValue(value,pend.size,&memory,pend.byte);
-		}
+		list<t_operand> operands = this->recalculateOperands(pend.operands);
+		string binFormat = pend.binFormat;
+		unsigned int size = pend.size;
+		unsigned int pos = pend.byte;
+		string result = replaceOperands(binFormat, operands, this->regs, this->labels, this->addr, size);
+
+		memory.writeNumber(result,pos);
+
 	}
 
 	return memory;
@@ -431,6 +428,24 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 		else
 			*operands= line.substr(b,i-b);
 	}
+}
+
+/**
+  * recalcula o valor das labels, retornando uma nova lista de operandos
+  */
+list<t_operand> Assembler::recalculateOperands(list<t_operand> operands)
+{
+	list<t_operand>::iterator ot;
+	list<t_operand> result;
+	for(ot=operands.begin() ; ot!=operands.end() ; ot++)
+	{
+		t_operand o = *ot;
+		if(o.type == TYPE_LABEL)
+			o.value = Number::toBin(this->labels.value(o.name));
+		result.push_back(o);
+	}
+
+	return result;
 }
 
 /**
