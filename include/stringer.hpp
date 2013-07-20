@@ -31,6 +31,14 @@ using namespace std;
 list<string> stringSplitChar(string text, string dividers);
 
 /**
+	*	quebra a string nos divisores passados
+	* tudo que estiver entre dois protectors sera tratado como um elemento unico
+	* um protector so pode ser fechado por outro igual
+	* nao acrescenta elementos vazios a lista
+	*/
+list<string> stringSplitCharProtected(string text, string dividers, string protectors, char escape);
+
+/**
 * le todas as palavras de uma string, as quais podem estar separadas por '\t' ou ' '
 * strings sao identificadas por qualquer caractere em delimiters, e sao fechadas pelo mesmo caractere
 * caracteres precedidos por escape sao escapados

@@ -247,7 +247,7 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	{
 		try
 		{
-			byte = this->directives.execute(mnemonic,operands,memory,byte);
+			byte = this->directives.execute(mnemonic,operands,this->labels,&this->pendecies,memory,byte);
 		}
 		catch(e_exception e)
 		{

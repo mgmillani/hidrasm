@@ -20,8 +20,15 @@
 #define DIRECTIVES_HPP
 
 #include <string>
+#include <list>
+#include <stack>
 
+#include "directives.hpp"
+#include "stringer.hpp"
+#include "numbers.hpp"
+#include "labels.hpp"
 #include "memory.hpp"
+#include "defs.hpp"
 
 using namespace std;
 
@@ -33,7 +40,7 @@ class Directives
 	/**
 	* executa a diretiva, retornando em qual byte a montagem deve continuar
 	*/
-	unsigned int execute(string directive,string operands,Memory *memory,unsigned int currentByte);
+	unsigned int execute(string directive,string operands,Labels labels,stack<t_pendency> *pendencies,Memory *memory,unsigned int currentByte);
 
 	/**
 	* verifica se a string passada corresponde a uma diretiva

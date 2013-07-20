@@ -71,6 +71,93 @@ list<string> stringSplitChar(string text, string dividers)
 }
 
 /**
+	*	quebra a string nos divisores passados
+	* tudo que estiver entre dois protectors sera tratado como um elemento unico
+	* um protector so pode ser fechado por outro igual
+	* nao acrescenta elementos vazios a lista
+	*/
+list<string> stringSplitCharProtected(string text, string dividers, string protectors, char escape)
+{
+	typedef enum {STATE_READ,STATE_SPLIT,STATE_ESCAPE,STATE_PROTECTED} e_state;
+	list<string> sections;
+
+	e_state state = STATE_SPLIT;
+	e_state nextState = STATE_SPLIT;
+	unsigned int i=0,b = 0;
+	char protectClose = '\0';
+	for(i=0 ; i<text.size() ; i++)
+	{
+		char c = text[i];
+		switch(state)
+		{
+			case STATE_ESCAPE:
+
+				state = nextState;
+				break;
+			case STATE_PROTECTED:
+				if(c == escape)
+				{
+					state = STATE_ESCAPE;
+					nextState = STATE_PROTECTED;
+				}
+				else if(c == protectClose)
+				{
+					sections.push_back(text.substr(b,i-b+1));
+					state = STATE_SPLIT;
+				}
+				break;
+			case STATE_READ:
+				//se for encontrado um divisor
+				if(dividers.find(c)!=string::npos)
+				{
+					sections.push_back(text.substr(b,i-b));
+					state = STATE_SPLIT;
+				}
+				//elemento protegido
+				else if(protectors.find(c)!=string::npos)
+				{
+					protectClose = c;
+					state = STATE_PROTECTED;
+				}
+				//escape
+				else if(c == escape)
+				{
+					state = STATE_ESCAPE;
+				}
+				break;
+			case STATE_SPLIT:
+				//se for o inicio de um elemento protegido
+				if(protectors.find(c) != string::npos)
+				{
+					state = STATE_PROTECTED;
+					protectClose = c;
+					b = i;
+				}
+				else if(c == escape)
+				{
+					state = STATE_ESCAPE;
+					b = i;
+				}
+				//se nao for um divider
+				else if(dividers.find(c)==string::npos)
+				{
+					state = STATE_READ;
+					b = i;
+				}
+				break;
+		}
+
+	}
+
+	if(state == STATE_READ)
+		sections.push_back(text.substr(b,i-b));
+	else if(state == STATE_PROTECTED)
+		throw(eOpenString);
+
+	return sections;
+}
+
+/**
 * le todas as palavras de uma string, as quais podem estar separadas por '\t' ou ' '
 * strings sao identificadas por qualquer caractere em delimiters, e sao fechadas pelo mesmo caractere
 * caracteres precedidos por escape sao escapados
