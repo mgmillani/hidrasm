@@ -39,6 +39,8 @@ using namespace std;
 unsigned int Directives::execute(string directive, string operands, Labels labels, stack<t_pendency> *pendencies, Memory *memory,unsigned int currentByte)
 {
 	Number n;
+	unsigned int size;
+	list<string> ops = stringSplitCharProtected(operands," ,\t","'\"",'\\');
 	//muda o proximo byte par amontagem
 	if(stringCaselessCompare(directive,"org")==0)
 	{
@@ -47,51 +49,45 @@ unsigned int Directives::execute(string directive, string operands, Labels label
 	}
 	else if(stringCaselessCompare(directive,"db")==0)
 	{
-		int value = n.toInt(operands);
-		memory->writeValue((unsigned char)value,currentByte);
-		currentByte++;
+		size = 1;
 	}
 	else if(stringCaselessCompare(directive,"dw")==0)
 	{
-
+		size = 2;
 	}
 	else if(stringCaselessCompare(directive,"dab")==0)
 	{
-		//ERR("dab Operands: %s\n",operands.c_str());
-		list<string> ops = stringSplitCharProtected(operands," ,\t","'\"",'\\');
-		list<string>::iterator ot;
-
-		for(ot=ops.begin() ; ot!=ops.end() ; ot++)
-		{
-			ERR("op: %s\n",ot->c_str());
-			int value = 0;
-			//se existir uma label com esse nome, usa seu valor
-			if(labels.exists(*ot))
-				value = labels.value(*ot);
-			else if(Number::exists(*ot))
-				value = n.toInt(*ot);
-			//se nao existir a label e nao for um numero, acrescenta uma pendencia
-			else
-			{
-				t_pendency p;
-				p.byte = currentByte;
-				t_operand op;
-				op.name = *ot;
-				op.type = TYPE_LABEL;
-				op.relative = false;
-				p.operands.push_back(op);
-				p.binFormat = "a";
-				p.size = 8;
-				pendencies->push(p);
-			}
-			memory->writeValue((unsigned char)value,currentByte);
-			currentByte++;
-		}
-
+		size = 1;
 	}
 	else if(stringCaselessCompare(directive,"daw")==0)
 	{
+		size = 2;
+	}
+	//array de valores
+	list<string>::iterator ot;
 
+	for(ot=ops.begin() ; ot!=ops.end() ; ot++)
+	{
+		//se existir uma label com esse nome, usa seu valor
+		if(labels.exists(*ot))
+			memory->writeNumber(Number::toBin(labels.value(*ot)),currentByte,size);
+		else if(Number::exists(*ot))
+			memory->writeNumber(Number::toBin(*ot),currentByte,size);
+		//se nao for nada conhecido, adiciona uma pendencia
+		else
+		{
+			t_pendency p;
+			p.byte = currentByte;
+			t_operand op;
+			op.name = *ot;
+			op.type = TYPE_LABEL;
+			op.relative = false;
+			p.operands.push_back(op);
+			p.binFormat = "a";
+			p.size = size*8;
+			pendencies->push(p);
+		}
+		currentByte += size;
 	}
 
 	return currentByte;

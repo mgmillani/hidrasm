@@ -351,14 +351,11 @@ unsigned char *Number::toByteArray(string n, unsigned int *size)
 			//numero de bytes = digitos/8
 			max = ceil(len/8.0);
 			number = (unsigned char *)malloc(max);
-
 			for(byte=0 ; byte<max ; byte++)
 			{
 				number[byte] = 0;
-				for(i=0 ; i<=7 && pos<len ; i++,pos--)
-				{
+				for(i=0 ; i<=7 && pos<len && pos>=0 ; i++,pos--)
 					number[byte] |= (values[pos]<<i);
-				}
 			}
 
 			break;
@@ -371,9 +368,7 @@ unsigned char *Number::toByteArray(string n, unsigned int *size)
 			{
 				char shift;
 				for(shift=0, i=n.size()-2 -byte*2; shift<=4 && i>=0 ; i--,shift+=4)
-				{
 					number[byte] |= values[i]<<shift;
-				}
 			}
 
 			break;

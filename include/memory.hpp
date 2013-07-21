@@ -41,6 +41,7 @@ class Memory
 
 	/**
 	  *	escreve todos os valores do array a partir da posicao startPos na memoria
+	  * ignora a endianess
 	  */
 	void writeArray(unsigned char *array, unsigned int arraySize, unsigned int startPos);
 
@@ -49,7 +50,7 @@ class Memory
     * usa a notacao adequada
     * retorna o numero de bytes escritos
     */
-	unsigned int writeNumber(string number,unsigned int startPos);
+	unsigned int writeNumber(string number,unsigned int startPos,unsigned int maxSize);
 
 	/**
 	  *	le um o valor que esta na posicao dada da memoria

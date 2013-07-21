@@ -64,17 +64,18 @@ void Memory::writeArray(unsigned char *array, unsigned int arraySize, unsigned i
   * usa a notacao adequada
   * retorna o numero de bytes escritos
   */
-unsigned int Memory::writeNumber(string number,unsigned int startPos)
+unsigned int Memory::writeNumber(string number,unsigned int startPos,unsigned int maxSize)
 {
 	unsigned int size;
 	unsigned char *array = Number::toByteArray(number,&size);
+	if(size > maxSize)
+		size = maxSize;
+
 	if(this->bigEndian)
 	{
 		unsigned int i;
 		for(i=0 ; i<size ; i++)
-		{
 			this->area[startPos+i] = array[size-i-1];
-		}
 	}
 	else
 		memcpy(this->area+startPos,array,size);

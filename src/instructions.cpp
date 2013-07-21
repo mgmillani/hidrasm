@@ -269,7 +269,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
 		printf("Code:%s\n",code.c_str());
 
-		return mem->writeNumber(code,pos);
+		return mem->writeNumber(code,pos,-1);
 	}
 	// esse ponto nunca deve ser executado
 	return 0;

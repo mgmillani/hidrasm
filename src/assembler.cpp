@@ -176,7 +176,7 @@ Memory Assembler::assembleCode(string code)
 		unsigned int pos = pend.byte;
 		string result = replaceOperands(binFormat, operands, this->regs, this->labels, this->addr, size);
 
-		memory.writeNumber(result,pos);
+		memory.writeNumber(result,pos,-1);
 
 	}
 
