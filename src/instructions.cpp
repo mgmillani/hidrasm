@@ -169,10 +169,8 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			//determina o tipo do operando
 			if(m.subtype[TYPE_REGISTER] || m.subtype[TYPE_ANYTHING])
 			{
-				//ERR("Reg or Anything (%s)\n",m.element.c_str());
 				if(registers.exists(m.element))
 				{
-					ERR("Register %s\n",m.element.c_str());
 					op.type = TYPE_REGISTER;
 					op.value = Number::toBin(registers.number(m.element));
 					opOk=true;
@@ -180,21 +178,24 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			}
 			if(m.subtype[TYPE_NUMBER] || m.subtype[TYPE_ANYTHING] || m.subtype[TYPE_ADDRESS])
 			{
-				//ERR("Num Anything Address %s\n",m.element.c_str());
 				if(number.exists(m.element))
 				{
 					op.type = TYPE_NUMBER;
 					op.value = Number::toBin(m.element);
 					opOk=true;
 				}
+				else if(Number::isString(m.element))
+				{
+					op.type = TYPE_NUMBER;
+					op.value = Number::stringToBin(m.element);
+					opOk=true;
+				}
 			}
 			if(m.subtype[TYPE_LABEL] || m.subtype[TYPE_ANYTHING] || m.subtype[TYPE_ADDRESS])
 			{
-				//ERR("Label Anything Address %s\n",m.element.c_str());
 				if(labels.exists(m.element))
 				{
 					op.type = TYPE_LABEL;
-					ERR("Label %s value: %u\n",op.name.c_str(),labels.value(op.name));
 					op.value = Number::toBin(labels.value(op.name));
 					opOk=true;
 				}
@@ -239,8 +240,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				op.relative = a.relative;
 				operands.push_back(op);
 			}
-			else
-				ERR("Op not OK!\n");
 		}//end for match
 		//se todos os operandos estao corretos, essa eh a instrucao certa
 		if(opOk)
@@ -265,9 +264,9 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	else
 	{
 		//i contem a ultima instrucao avaliada
-		printf("Format:%s\n",i.binFormat.c_str());
+		//printf("Format:%s\n",i.binFormat.c_str());
 		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
-		printf("Code:%s\n",code.c_str());
+		//printf("Code:%s\n",code.c_str());
 
 		return mem->writeNumber(code,pos,-1);
 	}

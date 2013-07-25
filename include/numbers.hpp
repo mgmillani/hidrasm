@@ -48,6 +48,12 @@ class Number
 	static string toBin(unsigned int n);
 
 	/**
+	  * converte uma string de caracteres para um numero binario (terminado por 'b')
+	  * cada carcatere sera convertido para 8 bits na ordem em que aparecer
+	  */
+	static string stringToBin(string str);
+
+	/**
 	  * escreve o valor binario de um digito hexadecimal em dest
 	  */
 	static void writeHexaDigitAsBin(char digit, char *dest);

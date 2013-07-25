@@ -91,7 +91,6 @@ unsigned int Memory::writeString(string str, unsigned int pos, unsigned int widt
 					else
 						num[0] = c;
 					r=0;
-					ERR("Write: %c\n",c);
 				}
 
 				while(r<width && w<max)

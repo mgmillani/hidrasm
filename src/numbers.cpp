@@ -264,6 +264,44 @@ string Number::toBin(unsigned int n)
 }
 
 /**
+	* converte uma string de caracteres para um numero binario (terminado por 'b')
+	* cada carcatere sera convertido para 8 bits na ordem em que aparecer
+	*/
+string Number::stringToBin(string str)
+{
+
+	char bits[str.size()*8];
+
+	unsigned int i;
+	unsigned int w;
+	bool escape = false;
+	for(i=0 ; i+1<str.size() ; i++)
+	{
+		unsigned char c = str[i];
+
+		if(c == '\\' && !escape)
+			escape = true;
+		else
+		{
+			escape = false;
+			unsigned int j;
+			for(j=0 ; j<8 ; j++)
+			{
+				if(c & 128)
+					bits[w++] = '1';
+				else
+					bits[w++] = '0';
+				c <<= 1;
+			}
+		}
+	}
+
+	bits[w] = 'b';
+	return string(bits);
+
+}
+
+/**
 	* escreve o valor binario de um digito hexadecimal em dest
 	*/
 void Number::writeHexaDigitAsBin(char digit, char *dest)
