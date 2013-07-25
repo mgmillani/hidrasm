@@ -60,6 +60,61 @@ void Memory::writeArray(unsigned char *array, unsigned int arraySize, unsigned i
 }
 
 /**
+	* escreve uma string a partir da posicao especificada. Cada caractere tera width bytes
+	* escreve os caracteres em ordem, mas cada um respeitando a endianess
+	* retorna o numero de bytes escritos, sendo que sera escrito no maximo max bytes
+	*/
+unsigned int Memory::writeString(string str, unsigned int pos, unsigned int width, unsigned int max)
+{
+	typedef enum {State_Ini,State_Escape,State_Write} e_state;
+
+	unsigned int i;
+	unsigned int w=0,r=0;
+	unsigned char num[width];
+	e_state state = State_Ini;
+
+	for(i=0 ; i<width ; i++)
+		num[i] = 0;
+
+	for(i=1 ; i+1<str.size() && w<max ; i++)
+	{
+		char c = str[i];
+		switch(state)
+		{
+			case State_Ini:
+				if(c == '\\')
+					state = State_Escape;
+				else
+				{
+					if(this->bigEndian)
+						num[width-1] = c;
+					else
+						num[0] = c;
+					r=0;
+					ERR("Write: %c\n",c);
+				}
+
+				while(r<width && w<max)
+					this->area[pos + w++] = num[r++];
+
+				break;
+			case State_Escape:
+				if(this->bigEndian)
+					num[width-1] = c;
+				else
+					num[0] = c;
+				r=0;
+				while(r<width && w<max)
+					this->area[pos + w++] = num[r++];
+				state = State_Ini;
+			break;
+		}
+	}
+
+	return w;
+}
+
+/**
   * escreve um numero a partir de uma determinada posicao
   * usa a notacao adequada
   * retorna o numero de bytes escritos

@@ -16,5 +16,6 @@ dw 300
 dab 14,15;enough
 dab 1 , 2 , 3 , 4,6 ,7 ;thats it
 dab zero,begin
-;dab 'abcd'
+dab 'abcd' , 3 , 'ab'
+daw 'efg'
 dab 255

@@ -397,5 +397,23 @@ bool Number::exists(string number)
 
 }
 
+/**
+	* verifica se o elemento passado eh uma string valida
+	*/
+bool Number::isString(string element)
+{
+
+	char first = element[0];
+	if(first != '\'' && first != '"')
+		return false;
+
+	size_t max = element.size();
+	if(element[max-1] != first)
+		return false;
+	if(element[max-2] == '\\')
+		return false;
+	return true;
+}
+
 
 

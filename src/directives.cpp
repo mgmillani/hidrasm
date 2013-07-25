@@ -73,6 +73,8 @@ unsigned int Directives::execute(string directive, string operands, Labels label
 			memory->writeNumber(Number::toBin(labels.value(*ot)),currentByte,size);
 		else if(Number::exists(*ot))
 			memory->writeNumber(Number::toBin(*ot),currentByte,size);
+		else if(Number::isString(*ot))
+			currentByte += memory->writeString(*ot,currentByte,size,-1) - size;
 		//se nao for nada conhecido, adiciona uma pendencia
 		else
 		{

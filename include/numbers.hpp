@@ -86,6 +86,11 @@ class Number
 	  * verifica se o dado numero eh valido
 	  */
 	static bool exists(string number);
+
+	/**
+	  * verifica se o elemento passado eh uma string valida
+	  */
+	static bool isString(string element);
 };
 
 #endif // NUMBERS_HPP

@@ -46,6 +46,13 @@ class Memory
 	void writeArray(unsigned char *array, unsigned int arraySize, unsigned int startPos);
 
 	/**
+	  * escreve uma string a partir da posicao especificada. Cada caractere tera width bytes
+	  * escreve os caracteres em ordem, mas cada um respeitando a endianess
+	  * retorna o numero de bytes escritos, sendo que sera escrito no maximo max bytes
+	  */
+	unsigned int writeString(string str, unsigned int pos, unsigned int width, unsigned int max);
+
+	/**
     * escreve um numero a partir de uma determinada posicao
     * usa a notacao adequada
     * retorna o numero de bytes escritos
