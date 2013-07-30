@@ -38,9 +38,10 @@ Machine::Machine()
 */
 void Machine::load(string config)
 {
-	typedef enum {STATE_INI,STATE_ENDIAN,STATE_SKIP,STATE_PC,STATE_END} e_state;
+	typedef enum {STATE_INI,STATE_ENDIAN,STATE_SKIP,STATE_PC,STATE_END,STATE_NAME} e_state;
 
 	e_state state = STATE_INI;
+	e_state nextState = STATE_INI;
 	unsigned int i;
 	unsigned int b = 0;
 	for(i=0 ; i<config.size() ; i++)
@@ -72,6 +73,7 @@ void Machine::load(string config)
 						throw(eInvalidFormat);
 
 					state = STATE_SKIP;
+					nextState = STATE_PC;
 				}
 
 				break;
@@ -80,7 +82,7 @@ void Machine::load(string config)
 				case STATE_SKIP:
 					if(!ISWHITESPACE(c))
 					{
-						state = STATE_PC;
+						state = nextState;
 						b = i;
 					}
 					break;
@@ -92,6 +94,16 @@ void Machine::load(string config)
 						string number = config.substr(b,i-b);
 						Number n;
 						this->pcBits = n.toInt(number);
+						state = STATE_SKIP;
+						nextState = STATE_NAME;
+					}
+					break;
+				//nome da maquina
+				case STATE_NAME:
+					if(ISWHITESPACE(c))
+					{
+						//converte a string para um inteiro
+						this->name = config.substr(b,i-b);
 						state = STATE_END;
 					}
 					break;

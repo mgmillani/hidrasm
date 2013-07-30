@@ -76,43 +76,44 @@ class Messenger
 	public:
 
 	/**
-	*	inicializa sem nenhuma mensagem
-	*/
+	  *	inicializa sem nenhuma mensagem
+	  */
 	Messenger(FILE *warningStream = stderr, FILE *errorStream = stderr);
-
 	/**
-	*	inicializa e carrega as mensagens do arquivo
-	*/
+	  * carrega as mensagens e inicializa
+	  */
 	Messenger(const char *filename,FILE *warningStream = stderr, FILE *errorStream = stderr);
+	Messenger(FILE *filename,FILE *warningStream = stderr, FILE *errorStream = stderr);
 
 	~Messenger();
 
 	/**
-	*	carrega as mensagens de erro e avisos de um arquivo
-	*/
+	  *	carrega as mensagens de erro e avisos de um arquivo
+	  */
 	void load(const char *filename);
+	void load(FILE *filename);
 
 	/**
-	*	gera a mensagem com o codigo dado, escrevendo-a na stream adequada
-	*	usa as informacoes de status para gerar a mensagem
-	*/
+	  *	gera a mensagem com o codigo dado, escrevendo-a na stream adequada
+	  *	usa as informacoes de status para gerar a mensagem
+	  */
 	void generateMessage(unsigned int code,t_status *status);
 
 	/**
-	*	retorna o numero de erros que ocorreram
-	*/
+	  *	retorna o numero de erros que ocorreram
+	  */
 	unsigned int numberErrors();
 
 	/**
-  * converte uma excecao para seu respectivo codigo
-  */
+    * converte uma excecao para seu respectivo codigo
+    */
 	static e_messages exceptionToMessage(e_exception e);
 
 	private:
 
 	/**
-	*	atualiza o valor de todas as variaveis utilizadas que estao em this->variables
-	*/
+	  *	atualiza o valor de todas as variaveis utilizadas que estao em this->variables
+	  */
 	void updateVariables(t_status *status);
 
 	map<unsigned int, t_message> msgs;

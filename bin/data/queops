@@ -1,5 +1,5 @@
 [machine]
-	little-endian 8
+	little-endian 8 queops
 [addressings]
 	direto = 0 o
 	indireto = 1 a,i

@@ -115,8 +115,6 @@ void Addressings::load(string config)
 				{
 					addr.expStr = config.substr(b,i-b);
 					addr.type = Expression::getExpressionType(addr.expStr);
-					//ERR("Addr expression:%s\n",addr.expStr.c_str());
-					//ERR("Type: %u\n",addr.type);
 					state = STATE_END;
 				}
 				break;
@@ -133,8 +131,6 @@ void Addressings::load(string config)
 	{
 		addr.expStr = config.substr(b,i-b);
 		addr.type = Expression::getExpressionType(addr.expStr);
-		//ERR("Addr expression:%s\n",addr.expStr.c_str());
-		//ERR("Type: %u\n",addr.type);
 		addr.expression = Expression(addr.expStr);
 	}
 
@@ -176,7 +172,6 @@ void Addressings::printAddressing(t_addressing *a, FILE *stream)
 */
 t_addressing Addressings::getAddressing(string name)
 {
-	ERR("Addr Name:%s\n",name.c_str());
 	return this->addrs.find(name)->second;
 }
 
@@ -224,7 +219,6 @@ t_addressing findBestAddressing(list<t_addressing> lst, e_type t)
 	}
 	if(!found)
 	{
-		//ERR("No addressing for %u found\n",t);
 		throw(eAddressingNotFound);
 	}
 	else

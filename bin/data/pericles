@@ -2,7 +2,7 @@
 	A
 	B
 [machine]
-	big-endian 12
+	big-endian 12 pericles
 [addressings]
 	direto = 00b o
 	indireto = 01b a,i

@@ -4,7 +4,8 @@ SRC = src
 OBJ = obj
 BIN = bin
 INC = include
-OBJECTS = $(OBJ)/main.o $(OBJ)/assembler.o $(OBJ)/stringer.o $(OBJ)/sha1.o $(OBJ)/instructions.o $(OBJ)/addressings.o $(OBJ)/numbers.o $(OBJ)/registers.o $(OBJ)/machine.o $(OBJ)/expression.o $(OBJ)/multiExpression.o $(OBJ)/memory.o $(OBJ)/labels.o $(OBJ)/directives.o
+LIB = -lboost_regex
+OBJECTS = $(OBJ)/main.o $(OBJ)/directives.o $(OBJ)/addressings.o $(OBJ)/registers.o $(OBJ)/instructions.o $(OBJ)/machine.o $(OBJ)/labels.o $(OBJ)/memory.o $(OBJ)/stringer.o $(OBJ)/numbers.o $(OBJ)/sha1.o $(OBJ)/messenger.o $(OBJ)/expression.o $(OBJ)/multiExpression.o $(OBJ)/assembler.o $(OBJ)/file.o $(OBJ)/operands.o $(OBJ)/types.o
 NAME = hidrassembler
 
 all: release
@@ -16,7 +17,7 @@ debug: CFLAGS += -g
 debug: assembler
 
 assembler: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o $(BIN)/$(NAME)
+	$(CC) $(CFLAGS) $(OBJECTS) $(LIB) -o $(BIN)/$(NAME)
 
 $(OBJ)/assembler.o: $(SRC)/assembler.cpp $(OBJ)/instructions.o $(OBJ)/registers.o $(OBJ)/labels.o $(OBJ)/machine.o $(OBJ)/directives.o
 	$(CC) $(CFLAGS) $(SRC)/assembler.cpp -c -o $(OBJ)/assembler.o

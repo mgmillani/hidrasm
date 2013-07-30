@@ -3,7 +3,7 @@
 	B
 	X
 [machine]
-	little-endian 8
+	little-endian 8 ramses
 [addressings]
 	direto = 00b o
 	indireto = 01b a,i

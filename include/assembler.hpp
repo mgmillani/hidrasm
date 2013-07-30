@@ -44,10 +44,13 @@ class Assembler
 	  */
 	Assembler(Instructions inst, Registers reg, Machine machine, Addressings adr);
 
+	void init(FILE *filename,Messenger messenger);
+
 	/**
 	  *	le as caracteristicas da arquitetura que estao no arquivo dado
 	  */
 	Assembler(const char *filename,Messenger messenger);
+	Assembler(FILE *file,Messenger messenger);
 
 	/**
 	  *	monta o codigo assembly passado
@@ -63,7 +66,8 @@ class Assembler
 	  * dump da memoria (size bytes)
 	  * SHA1 do resto do arquivo (20 bytes)
 	  */
-	void createBinaryV0(string filename,string machineName,Memory *memory);
+	void createBinaryV0(string filename,Memory *memory);
+	void createBinaryV0(FILE *fl,Memory *memory);
 
 	/**
 	  * escreve a situacao atual dos atributos do objeto

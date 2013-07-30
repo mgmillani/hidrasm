@@ -47,12 +47,8 @@ using namespace std;
 */
 //Assemlber::Assembler(Instructions *inst, Registers *reg, Machine *machine, Adressing *adr);
 
-/**
-*	le as caracteristicas da arquitetura que estao no arquivo dado
-*/
-Assembler::Assembler(const char *filename,Messenger messenger)
+void Assembler::init(FILE *fl,Messenger messenger)
 {
-	FILE *fl = fopen(filename,"rb");
 	if(fl == NULL)
 	{
 		throw eFileNotFound;
@@ -66,7 +62,6 @@ Assembler::Assembler(const char *filename,Messenger messenger)
 		char *data = (char *)malloc(size+1);
 		fseek(fl,0,SEEK_SET);
 		fread(data,1,size,fl);
-		fclose(fl);
 		data[size] = '\0';
 
 		string text (data);
@@ -134,10 +129,22 @@ Assembler::Assembler(const char *filename,Messenger messenger)
 				}
 			}
 		}
-
 		free(data);
-
 	}
+}
+
+/**
+*	le as caracteristicas da arquitetura que estao no arquivo dado
+*/
+Assembler::Assembler(const char *filename,Messenger messenger)
+{
+	FILE *fl = fopen(filename,"rb");
+	this->init(fl,messenger);
+	fclose(fl);
+}
+Assembler::Assembler(FILE *file,Messenger messenger)
+{
+	this->init(file,messenger);
 }
 
 /**
@@ -160,7 +167,6 @@ Memory Assembler::assembleCode(string code)
 	//monta cada linha
 	for(it=lines.begin() ; it!=lines.end() ; it++,line++)
 	{
-		//ERR("Assembling line: %s\n",(*it).c_str());
 		pos = this->assembleLine(*it,&memory,pos,line);
 	}
 
@@ -283,9 +289,15 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 * dump da memoria (size bytes)
 * SHA1 do resto do arquivo (20 bytes)
 */
-void Assembler::createBinaryV0(string filename,string machineName,Memory *memory)
+void Assembler::createBinaryV0(string filename,Memory *memory)
 {
 	FILE *fl = fopen(filename.c_str(),"wb");
+	this->createBinaryV0(fl,memory);
+	fclose(fl);
+}
+void Assembler::createBinaryV0(FILE *fl,Memory *memory)
+{
+	string machineName = this->mach.name;
 	//escreve a versão
 	char version = 0;
 	fwrite(&version,1,1,fl);
@@ -322,7 +334,6 @@ void Assembler::createBinaryV0(string filename,string machineName,Memory *memory
 	//escreve o SHA1
 	fwrite(sha,1,20,fl);
 
-	fclose(fl);
 	delete shaCalc;
 	free(cat);
 	free(sha);

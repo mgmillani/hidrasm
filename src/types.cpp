@@ -7,7 +7,7 @@
   */
 bool isSubtype(e_type A, e_type B)
 {
-	//ERR("Comparing %u and %u\n",A,B);
+
 	if(B == TYPE_ANYTHING)
 		return true;
 	if(B == TYPE_ADDRESS)

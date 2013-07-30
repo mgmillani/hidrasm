@@ -1,5 +1,5 @@
 [machine]
-	little-endian 8
+	little-endian 8 volta
 [addressings]
 	direto = 0 o
 	indireto = 01b a,i

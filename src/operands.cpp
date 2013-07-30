@@ -81,7 +81,7 @@ t_operand Operands::getOperandIndex(e_type type, unsigned int index)
 
 			for(i=0 ; i<index && this->itMode!=this->operands.end() ; this->itMode++,i++)
 				;
-			ERR("Found: %s\n",this->itMode->name.c_str());
+
 			return *this->itMode;
 			break;
 		case TYPE_ADDRESS:

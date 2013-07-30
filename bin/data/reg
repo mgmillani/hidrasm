@@ -64,7 +64,7 @@
 	R62
 	R63
 [machine]
-	little-endian 8
+	little-endian 8 reg
 [addressings]
 	direto = 0 o
 [instructions]

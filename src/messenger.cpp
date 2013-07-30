@@ -58,6 +58,14 @@ Messenger::~Messenger()
 /**
 *	inicializa e carrega as mensagens do arquivo
 */
+Messenger::Messenger(FILE *filename,FILE *warningStream, FILE *errorStream)
+{
+
+}
+
+/**
+*	inicializa e carrega as mensagens do arquivo
+*/
 Messenger::Messenger(const char *filename,FILE *warningStream, FILE *errorStream)
 {
 	this->errorStream = errorStream;
@@ -75,6 +83,16 @@ Messenger::Messenger(const char *filename,FILE *warningStream, FILE *errorStream
 *	carrega as mensagens de erro e avisos de um arquivo
 */
 void Messenger::load(const char *filename)
+{
+	FILE *fl = fopen(filename,"rb");
+	this->load(fl);
+	fclose(fl);
+}
+
+/**
+*	carrega as mensagens de erro e avisos de um arquivo
+*/
+void Messenger::load(FILE *filename)
 {
 	list<string> lines = fileReadLines(filename);
 
@@ -128,7 +146,6 @@ void Messenger::load(const char *filename)
 
 			this->msgs.insert(pair<unsigned int,t_message>(num,msg));
 		}
-
 	}
 }
 
@@ -138,10 +155,7 @@ void Messenger::load(const char *filename)
 */
 void Messenger::generateMessage(unsigned int code,t_status *status)
 {
-	ERR("generating message...\n");
 	this->updateVariables(status);
-	ERR("updated vars\n");
-
 	map<unsigned int, t_message>::iterator it = this->msgs.find(code);
 	string msg;
 	if(it != this->msgs.end())
@@ -162,15 +176,11 @@ void Messenger::generateMessage(unsigned int code,t_status *status)
 			this->warnings++;
 			stream = this->warningStream;
 		}
-		ERR("replacing...");
+
 		msg = stringReplaceAll(type + message.message,this->variables) + '\n';
-		ERR("done\n");
+
 		fwrite(msg.c_str(),1,msg.size(),stream);
 	}
-
-	ERR("DONE!\n");
-
-
 }
 
 /**
@@ -178,8 +188,8 @@ void Messenger::generateMessage(unsigned int code,t_status *status)
 */
 void Messenger::updateVariables(t_status *status)
 {
-	ERR("Begin...");
-	ERR("MAXDIGITS: %d\n",(int)MAXDIGITS);
+
+
 	char buffer[MAXDIGITS];
 
 	this->variables["$ADDRESSING_MODE"] = status->operand;
@@ -208,7 +218,7 @@ void Messenger::updateVariables(t_status *status)
 
 	sprintf(buffer,"%d",(int)(pow(2,status->operandSize-1)-1));
 	this->variables["$OPERAND_SIZE"] = string(buffer);
-	ERR("End\n");
+
 }
 
 /**

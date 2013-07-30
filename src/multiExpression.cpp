@@ -107,8 +107,8 @@
 		boost::regex_match(phrase.c_str(),what,this->regexp);
 		if(what[0].matched==0)
 		{
-			ERR("phrase: %s\n",phrase.c_str());
-			ERR("regex:\n%s\n",this->regexStr.c_str());
+
+
 			throw(eUnmatchedExpression);
 		}
 
@@ -119,7 +119,7 @@
 		for(i=0 ; i<what.size() ; i++)
 		{
 			string whatStr = what[i];
-			//ERR("Match %d: (%s)\n",i,whatStr.c_str());
+
 		}
 
 
@@ -135,7 +135,7 @@
 				{
 					string whatStr = what[i+j];
 					m.element = whatStr;
-					//ERR("%d matched with %s\n",i+j,whatStr.c_str());
+
 					m.subtype[varToNum(this->subvars[j])] = 1;
 					m.indexes.push_back(j);
 				}

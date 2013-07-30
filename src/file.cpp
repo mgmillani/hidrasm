@@ -28,30 +28,62 @@
 using namespace std;
 
 /**
-*	le todas as linhas do arquivo, criando uma lista com cada uma delas
-*/
+  *	le todas as linhas do arquivo, criando uma lista com cada uma delas
+  */
 list<string> fileReadLines(const char *filename)
 {
 	int size;
 	char *raw = fileRead(filename,&size,1);
+	list<string> result = fileReadLines(raw,size);
+	free(raw);
+	return result;
+}
+
+/**
+  *	le todas as linhas do arquivo, criando uma lista com cada uma delas
+  */
+list<string> fileReadLines(FILE *file)
+{
+	int size;
+	char *raw = fileRead(file,&size,1);
+	list<string> result = fileReadLines(raw,size);
+	free(raw);
+	return result;
+}
+
+/**
+  *	le todas as linhas do arquivo, criando uma lista com cada uma delas
+  */
+list<string> fileReadLines(char *raw, int size)
+{
 	list<string> list;
 	if(raw == NULL)
 		return list;
 	raw[size] = '\0';
 	string text (raw);
 	list = stringSplitChar(text,"\n\r");
-	free(raw);
 
 	return list;
 }
 
 /**
-*	le todos os bytes do arquivo, escrevendo seu tamanho em size
-* extra indica quantos bytes a mais serao deixados no final do arquivo (nao eh somado a size)
-*/
+  *	le todos os bytes do arquivo, escrevendo seu tamanho em size
+  * extra indica quantos bytes a mais serao deixados no final do arquivo (nao eh somado a size)
+  */
 char *fileRead(const char *filename,int *size,int extra)
 {
 	FILE *fl = fopen(filename,"rb");
+	char *data = fileRead(fl,size,extra);
+	fclose(fl);
+	return data;
+}
+
+/**
+  *	le todos os bytes do arquivo, escrevendo seu tamanho em size
+  * extra indica quantos bytes a mais serao deixados no final do arquivo (nao eh somado a size)
+  */
+char *fileRead(FILE *fl,int *size,int extra)
+{
 	if(fl == NULL)
 		return NULL;
 
@@ -61,7 +93,6 @@ char *fileRead(const char *filename,int *size,int extra)
 
 	char *data = (char *)malloc(*size+extra);
 	fread(data,1,*size,fl);
-	fclose(fl);
 	return data;
 
 }

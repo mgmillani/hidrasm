@@ -275,7 +275,6 @@ string Number::stringToBin(string str)
 	unsigned int i;
 	unsigned int w=0;
 	bool escape = false;
-	ERR("Bits: %u\n",str.size()*8);
 	for(i=1 ; i+1<str.size() ; i++)
 	{
 		unsigned char c = str[i];
@@ -288,7 +287,6 @@ string Number::stringToBin(string str)
 			unsigned int j;
 			for(j=0 ; j<8 ; j++)
 			{
-				ERR("W:%d\n",w);
 				if(c & 128)
 					bits[w++] = '1';
 				else
@@ -430,7 +428,7 @@ bool Number::exists(string number)
 	e_numType num = numberType(number);
 	if(num == INVALID)
 	{
-		//ERR("NaN: %s\n",number.c_str());
+
 		return false;
 	}
 	else

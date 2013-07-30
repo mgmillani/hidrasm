@@ -1,5 +1,5 @@
 [machine]
-	little-endian 8
+	little-endian 8 ahmes
 [addressings]
 	direto = 0 o
 [instructions]
