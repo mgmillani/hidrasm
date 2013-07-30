@@ -125,7 +125,7 @@ void Expression::init(string expression)
 		else if(isReserved(c) && !escape)
 		{
 			//expressao regular que agrupa qualquer caractere alfanumerico ou _
-			regexp += "((?:[[:alnum:]]|_)+)";
+			regexp += "((?:[[:alnum:]]|_)+|(?:\".\")+|(?:'.')+)";
 			//guarda o tipo da variavel
 			this->vars[amount++] = c;
 		}

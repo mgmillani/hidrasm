@@ -106,7 +106,11 @@
 		boost::match_results<const char*> what;
 		boost::regex_match(phrase.c_str(),what,this->regexp);
 		if(what[0].matched==0)
+		{
+			ERR("phrase: %s\n",phrase.c_str());
+			ERR("regex:\n%s\n",this->regexStr.c_str());
 			throw(eUnmatchedExpression);
+		}
 
 		unsigned int i;
 		list<t_match> vars;

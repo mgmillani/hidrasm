@@ -96,11 +96,13 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 
 	//busca todas as instrucoes com o dado mnemonico
 	boost::to_upper(mnemonic);
+	ERR("searching\n");
 	map<string,list<t_instruction> >::iterator it = this->insts.find(mnemonic);
 
 	//se nao encontrou
 	if(it==this->insts.end())
 	{
+		ERR("Mnemonic is unknown: %s\n",mnemonic.c_str());
 		throw (eUnknownMnemonic);
 	}
 
@@ -112,8 +114,10 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	list<t_operand> operands;
 	bool hasPendency = false;
 
+	ERR("for matches\n");
 	for(jt=matches.begin() ; jt!=matches.end() && !inOk; jt++)
 	{
+		ERR("match ---\n");
 		i = *jt;
 		bool potentialLabel = false;
 
@@ -146,10 +150,14 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			}
 		}
 
+		ERR("Creating mulex\n");
+
 		MultiExpression mulEx(expr,i.operandExpression);
 		list<t_match > matches;
 
+		ERR("Searching sub\n");
 		matches = mulEx.findAllSub(operandsStr);
+
 		//verifica se as variaveis sao do tipo adequado
 		list<t_match>::iterator imatch;
 
@@ -158,8 +166,10 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 
 		Number number;
 		bool opOk = true;
+		ERR("For matches\n");
 		for(imatch=matches.begin() ; imatch!=matches.end() && opOk ; imatch++)
 		{
+			ERR("match\n");
 			opOk = false;
 			potentialLabel = false;
 			t_match m = *imatch;
@@ -186,6 +196,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				}
 				else if(Number::isString(m.element))
 				{
+					ERR("Is a string: %s\n",m.element.c_str());
 					op.type = TYPE_NUMBER;
 					op.value = Number::stringToBin(m.element);
 					opOk=true;

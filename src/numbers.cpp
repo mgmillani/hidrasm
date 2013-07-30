@@ -273,9 +273,10 @@ string Number::stringToBin(string str)
 	char bits[str.size()*8];
 
 	unsigned int i;
-	unsigned int w;
+	unsigned int w=0;
 	bool escape = false;
-	for(i=0 ; i+1<str.size() ; i++)
+	ERR("Bits: %u\n",str.size()*8);
+	for(i=1 ; i+1<str.size() ; i++)
 	{
 		unsigned char c = str[i];
 
@@ -287,6 +288,7 @@ string Number::stringToBin(string str)
 			unsigned int j;
 			for(j=0 ; j<8 ; j++)
 			{
+				ERR("W:%d\n",w);
 				if(c & 128)
 					bits[w++] = '1';
 				else
@@ -297,6 +299,7 @@ string Number::stringToBin(string str)
 	}
 
 	bits[w] = 'b';
+	bits[w+1] = '\0';
 	return string(bits);
 
 }
