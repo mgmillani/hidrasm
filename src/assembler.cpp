@@ -50,9 +50,7 @@ using namespace std;
 void Assembler::init(FILE *fl,Messenger messenger)
 {
 	if(fl == NULL)
-	{
 		throw eFileNotFound;
-	}
 	else
 	{
 		this->messenger = messenger;
@@ -95,6 +93,7 @@ void Assembler::init(FILE *fl,Messenger messenger)
 						i++;
 					if(line[i]!=']')
 						throw eInvalidFormat;
+
 					string catName = stringTrim(string(line,start,i-start)," \t");
 					if(stringCaselessCompare(catName,"instructions")==0)
 						category = CAT_INST;
@@ -339,6 +338,35 @@ void Assembler::createBinaryV0(FILE *fl,Memory *memory)
 	free(sha);
 
 
+}
+
+/**
+	* cria o arquivo binario no formato do Daedalus
+	* o formato eh o seguinte:
+	* primeiro byte: 3
+	* segundo  byte: 0
+	* proximos 3 bytes: nome da maquina, em maiusculas
+	* resto: dump da memoria, sendo que cada valor eh um inteiro de 16 bit em notacao little-endian
+	*/
+void Assembler::createBinaryV3(FILE *fl,Memory *memory)
+{
+	if(fl == NULL)
+		throw eFileNotFound;
+	//escreve o 3 e o 0
+	unsigned char data[2];
+	data[0] = 3;
+	data[1] = 0;
+	fwrite(data,1,2,fl);
+
+	data[1] = 0;
+	unsigned int size;
+	unsigned int i;
+	unsigned char *mem = memory->pack(&size);
+	for(i=0 ; i<size ; i++)
+	{
+		data[0] = mem[size];
+		fwrite(data,1,2,fl);
+	}
 }
 
 /**

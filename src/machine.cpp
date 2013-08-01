@@ -116,12 +116,10 @@ void Machine::load(string config)
 		}
 	}
 
-	if(state==STATE_PC)
+	if(state==STATE_NAME)
 	{
-		//converte a string para um inteiro
-		string number = config.substr(b,i-b);
-		Number n;
-		this->pcBits = n.toInt(number);
+		//le o nome da maquina
+		this->name = config.substr(b,i-b);
 	}
 
 }

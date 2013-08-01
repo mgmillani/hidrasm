@@ -70,6 +70,16 @@ class Assembler
 	void createBinaryV0(FILE *fl,Memory *memory);
 
 	/**
+	  * cria o arquivo binario no formato do Daedalus
+	  * o formato eh o seguinte:
+	  * primeiro byte: 3
+	  * segundo  byte: 0
+	  * proximos 3 bytes: nome da maquina, em maiusculas
+	  * resto: dump da memoria, sendo que cada valor eh um inteiro de 16 bit em notacao little-endian
+	  */
+	void createBinaryV3(FILE *fl,Memory *memory);
+
+	/**
 	  * escreve a situacao atual dos atributos do objeto
 	  */
 	void print(FILE *stream);

@@ -54,19 +54,19 @@ int main(int argc,char *argv[])
 			bool opened = true;
 			FILE *file = NULL;
 
-			if(strcmp(left,"source")==0)
+			if(strcmp(left,"source") == 0)
 				file = source = fopen(right,"rb");
-			else if(strcmp(left,"output")==0)
+			else if(strcmp(left,"output") == 0)
 				file = output = fopen(right,"wt");
-			else if(strcmp(left,"warnings")==0)
+			else if(strcmp(left,"warnings") == 0)
 				file = warnings = fopen(right,"wt");
-			else if(strcmp(left,"errors")==0)
+			else if(strcmp(left,"errors") == 0)
 				file = errors = fopen(right,"wt");
-			else if(strcmp(left,"symbols")==0)
+			else if(strcmp(left,"symbols") == 0)
 				file = symbols = fopen(right,"wt");
-			else if(strcmp(left,"machine")==0)
+			else if(strcmp(left,"machine") == 0)
 				file = machine = fopen(right,"rb");
-			else if(strcmp(left,"messages")==0)
+			else if(strcmp(left,"messages") == 0)
 				file = messages = fopen(right,"rb");
 			else
 			{
@@ -100,14 +100,14 @@ int main(int argc,char *argv[])
 	{
 		Messenger messenger(messages,warnings,errors);
 		Assembler assembler(machine,messenger);
+
 		int size;
 		char *codeP = fileRead(source,&size,1);
 		codeP[size] = '\0';
 		string code(codeP);
 
 		Memory mem = assembler.assembleCode(code);
-
-		assembler.createBinaryV0(output,&mem);
+		assembler.createBinaryV3(output,&mem);
 
 		free(codeP);
 	}
@@ -132,7 +132,7 @@ int main(int argc,char *argv[])
 	if(machine != NULL)
 		fclose(machine);
 	if(messages != NULL)
-		fclose(machine);
+		fclose(messages);
 
 	return 0;
 
