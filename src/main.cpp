@@ -37,8 +37,8 @@ int main(int argc,char *argv[])
 	FILE *warnings = stderr;
 	FILE *symbols = NULL;
 	FILE *machine = NULL;
-	char *machineName = NULL;
 	FILE *messages = NULL;
+	unsigned int version = 0;
 
 	if(argc <=3)
 		help = true;
@@ -68,8 +68,19 @@ int main(int argc,char *argv[])
 				file = machine = fopen(right,"rb");
 			else if(strcmp(left,"messages") == 0)
 				file = messages = fopen(right,"rb");
+			else if(strcmp(left,"version") == 0)
+			{
+				opened = false;
+				sscanf(right,"%u",&version);
+				if(version != 0 && version != 3)
+				{
+					help = true;
+					ERR("Invalid version: %u\n",version);
+				}
+			}
 			else
 			{
+				ERR("Invalid option: %s\n",left);
 				help = true;
 				opened = false;
 			}
@@ -85,16 +96,17 @@ int main(int argc,char *argv[])
 	//mostra mensagem de ajuda
 	if(help)
 	{
-		printf("usage: hidrassembler [OPTIONS...] machine=<machine> messages=<messages>\n");
-		printf("where:\n");
-		printf("machine=<machine>\tloads the specifications for the assembler from the file <machine>\n");
-		printf("messages=<messages>\tloads errors and warnings from <messages>\n");
-		printf("\navailable options:\n");
-		printf("source=<filename>\t source file <filename> will be used instead of stdin\n");
-		printf("output=<filename>\t generated binary will be written to <filename> instead of stdout\n");
-		printf("warnings=<filename>\t generated warnings will be written to <filename> instead of stderr\n");
-		printf("errors=<filename>\t generated errors will be written to <filename> instead of stderr\n");
-		printf("symbols=<filename>\t defined symbols will be written to <filename>\n");
+		ERR("\n\nusage: hidrassembler [OPTIONS...] machine=<machine> messages=<messages>\n");
+		ERR("where:\n");
+		ERR("machine=<machine>\tloads the specifications for the assembler from the file <machine>\n");
+		ERR("messages=<messages>\tloads errors and warnings from <messages>\n");
+		ERR("\navailable options:\n");
+		ERR("source=<filename>\t source file <filename> will be used instead of stdin\n");
+		ERR("output=<filename>\t generated binary will be written to <filename> instead of stdout\n");
+		ERR("warnings=<filename>\t generated warnings will be written to <filename> instead of stderr\n");
+		ERR("errors=<filename>\t generated errors will be written to <filename> instead of stderr\n");
+		ERR("symbols=<filename>\t defined symbols will be written to <filename>\n");
+		ERR("version=<number>\t creates a binary file for the <number> version. 3 is for Daedalus. Hidra uses version 0 (default:0)\n");
 	}
 	else if(machine != NULL && messages != NULL)
 	{
@@ -114,9 +126,9 @@ int main(int argc,char *argv[])
 	else
 	{
 		if(machine == NULL)
-			printf("Error: the machine was not specified\n");
+			ERR("Error: the machine was not specified\n");
 		if(messages == NULL)
-			printf("Error: message file was not specified\n");
+			ERR("Error: message file was not specified\n");
 	}
 
 	if(source != NULL)

@@ -153,7 +153,7 @@ void Number::convertDigits(string n, unsigned char *values,e_numType type)
 */
 int Number::toInt(string n)
 {
-	int base;
+	int base = 2;
 	int power = 1;
 	int end = n.size()-1;
 	e_numType type = numberType(n);
@@ -360,7 +360,7 @@ unsigned char *Number::toByteArray(string n, unsigned int *size)
 {
 
 	unsigned char values[n.size()];
-	unsigned char *number;
+	unsigned char *number = NULL;
 	e_numType type = numberType(n);
 
 	if(type == INVALID || type==DECIMAL)
@@ -380,7 +380,7 @@ unsigned char *Number::toByteArray(string n, unsigned int *size)
 
 	int len = last-first+1;
 	int i;
-	int max;
+	int max=0;
 	int byte;
 	int pos = n.size()-2;
 	switch(type)

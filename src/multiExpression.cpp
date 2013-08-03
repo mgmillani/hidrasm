@@ -107,8 +107,6 @@
 		boost::regex_match(phrase.c_str(),what,this->regexp);
 		if(what[0].matched==0)
 		{
-
-
 			throw(eUnmatchedExpression);
 		}
 
@@ -119,7 +117,6 @@
 		for(i=0 ; i<what.size() ; i++)
 		{
 			string whatStr = what[i];
-
 		}
 
 

@@ -39,7 +39,7 @@ using namespace std;
 unsigned int Directives::execute(string directive, string operands, Labels labels, stack<t_pendency> *pendencies, Memory *memory,unsigned int currentByte)
 {
 	Number n;
-	unsigned int size;
+	unsigned int size = 0;
 	list<string> ops = stringSplitCharProtected(operands," ,\t","'\"",'\\');
 	//muda o proximo byte par amontagem
 	if(stringCaselessCompare(directive,"org")==0)

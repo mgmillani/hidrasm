@@ -85,14 +85,17 @@ char *fileRead(const char *filename,int *size,int extra)
 char *fileRead(FILE *fl,int *size,int extra)
 {
 	if(fl == NULL)
+	{
+		*size = 0;
 		return NULL;
+	}
 
 	fseek(fl,0,SEEK_END);
 	*size = ftell(fl);
 	fseek(fl,0,SEEK_SET);
 
 	char *data = (char *)malloc(*size+extra);
-	fread(data,1,*size,fl);
+	*size = fread(data,1,*size,fl);
 	return data;
 
 }

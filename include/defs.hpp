@@ -64,7 +64,8 @@ typedef enum Exceptions
 	eUndefinedLabel,
 	eInvalidExpressionVariable,
 	eAddressingNotFound,
-	eOperandNotFound
+	eOperandNotFound,
+	eInvalidMachine
 
 } e_exception;
 

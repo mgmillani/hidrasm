@@ -42,7 +42,7 @@ void Addressings::load(string config)
 	e_state state = STATE_INI;
 	e_state nextState = STATE_INI;
 	unsigned int i;
-	unsigned int b;
+	unsigned int b=0;
 	t_addressing addr;
 	string name;
 	bool comment = false;

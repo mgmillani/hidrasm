@@ -66,7 +66,7 @@ void Memory::writeArray(unsigned char *array, unsigned int arraySize, unsigned i
 	*/
 unsigned int Memory::writeString(string str, unsigned int pos, unsigned int width, unsigned int max)
 {
-	typedef enum {State_Ini,State_Escape,State_Write} e_state;
+	typedef enum {State_Ini,State_Escape} e_state;
 
 	unsigned int i;
 	unsigned int w=0,r=0;
@@ -129,7 +129,9 @@ unsigned int Memory::writeNumber(string number,unsigned int startPos,unsigned in
 	{
 		unsigned int i;
 		for(i=0 ; i<size ; i++)
+		{
 			this->area[startPos+i] = array[size-i-1];
+		}
 	}
 	else
 		memcpy(this->area+startPos,array,size);

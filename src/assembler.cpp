@@ -59,7 +59,7 @@ void Assembler::init(FILE *fl,Messenger messenger)
 		size = ftell(fl);
 		char *data = (char *)malloc(size+1);
 		fseek(fl,0,SEEK_SET);
-		fread(data,1,size,fl);
+		size = fread(data,1,size,fl);
 		data[size] = '\0';
 
 		string text (data);
@@ -156,7 +156,8 @@ Memory Assembler::assembleCode(string code)
 	list<string> lines = stringSplitChar(code,"\n\r");
 
 	//aloca espaco suficiente para a memoria
-	int size = pow(2,this->mach.getPCSize());
+	//int size = pow(2,this->mach.getPCSize());
+	int size = 2<<this->mach.getPCSize();
 	Memory memory(size,this->mach.bigEndian);
 
 	unsigned int pos = 0;
@@ -179,7 +180,7 @@ Memory Assembler::assembleCode(string code)
 		string binFormat = pend.binFormat;
 		unsigned int size = pend.size;
 		unsigned int pos = pend.byte;
-		string result = replaceOperands(binFormat, operands, this->regs, this->labels, this->addr, size);
+		string result = replaceOperands(binFormat, operands, size);
 
 		memory.writeNumber(result,pos,-1);
 
@@ -204,7 +205,7 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	status.lastOrgLine = 0;
 	status.position = 0;
 	status.foundOperands = 0;
-	status.expectedOperands = 0;
+	//status.expectedOperands = 0;
 	status.operandSize = 0;
 	status.line = lineNumber;
 	status.position = byte;
@@ -228,23 +229,29 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 		{
 			if(e == eRedefinedLabel)
 			{
+				status.firstDefinition = this->labels.line(defLabel);
 				this->messenger.generateMessage(mRedefinedLabel,&status);
 			}
 		}
 	}
 	//se for uma instrucao, monta-a
-	int size;
 	string a = mnemonic;
 	if(this->inst.isInstruction(mnemonic))
 	{
-		printf("Inst:%s\n",mnemonic.c_str());
 		try
 		{
 			byte+=this->inst.assemble(a,operands,memory,byte,&this->pendecies,this->addr,this->labels,this->regs);
 		}
 		catch(e_exception e)
 		{
-			this->messenger.generateMessage(Messenger::exceptionToMessage(e),&status);
+			ERR("Exception %u\n",e);
+			list<t_instruction> insts = this->inst.getInstructions(mnemonic);
+			list<t_instruction>::iterator it;
+			for(it=insts.begin() ; it!=insts.end() ; it++)
+			{
+				status.operandFormat = it->operandExpression;
+				this->messenger.generateMessage(Messenger::exceptionToMessage(e),&status);
+			}
 		}
 	}
 	//executa a diretiva
@@ -269,13 +276,6 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 			}
 		}
 	}
-
-	printf("#######\nLine:%s\n",line.c_str());
-	printf("Defined Label: %s\n",defLabel.c_str());
-	printf("Instruction: %s\n",mnemonic.c_str());
-	printf("Operands: %s\n",operands.c_str());
-	printf("\n\n*********\n");
-	//getchar();
 
 	return byte;
 }
@@ -350,6 +350,19 @@ void Assembler::createBinaryV0(FILE *fl,Memory *memory)
 	*/
 void Assembler::createBinaryV3(FILE *fl,Memory *memory)
 {
+	const char *machineName = this->mach.name.c_str();
+	const char *alias = NULL;
+	if(strcmp("neander",machineName)==0)
+		alias = "NEA";
+	else if(strcmp("ahmes",machineName)==0)
+		alias = "AHM";
+	else if(strcmp("ramses",machineName)==0)
+		alias = "RMS";
+	else if(strcmp("cesar",machineName)==0)
+		alias = "C16";
+	else
+		throw eInvalidMachine;
+
 	if(fl == NULL)
 		throw eFileNotFound;
 	//escreve o 3 e o 0
@@ -357,6 +370,8 @@ void Assembler::createBinaryV3(FILE *fl,Memory *memory)
 	data[0] = 3;
 	data[1] = 0;
 	fwrite(data,1,2,fl);
+	//escreve a sigla
+	fwrite(alias,1,4,fl);
 
 	data[1] = 0;
 	unsigned int size;
@@ -364,7 +379,7 @@ void Assembler::createBinaryV3(FILE *fl,Memory *memory)
 	unsigned char *mem = memory->pack(&size);
 	for(i=0 ; i<size ; i++)
 	{
-		data[0] = mem[size];
+		data[0] = mem[i];
 		fwrite(data,1,2,fl);
 	}
 }
@@ -380,7 +395,7 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 	e_states state = STATE_INI;
 
 	unsigned int i;
-	unsigned int b;
+	unsigned int b=0;
 	bool read = false;	//indica se uma palavra esta sendo lida ou nao
 	for(i=0 ; i<line.size() ; i++)
 	{

@@ -38,6 +38,8 @@ void Labels::define(string name,unsigned int pos,unsigned int line)
 		//marca como nao referenciada
 		this->unrefs.insert(name);
 	}
+	else
+		throw eRedefinedLabel;
 }
 
 /**

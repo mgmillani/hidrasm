@@ -60,7 +60,14 @@ Messenger::~Messenger()
 */
 Messenger::Messenger(FILE *filename,FILE *warningStream, FILE *errorStream)
 {
+	this->errorStream = errorStream;
+	this->warningStream = warningStream;
 
+	this->msgs = map<unsigned int,t_message>();
+	this->variables = map<string,string>();
+	this->errors = 0;
+	this->warnings = 0;
+	this->load(filename);
 }
 
 /**
@@ -156,6 +163,7 @@ void Messenger::load(FILE *filename)
 void Messenger::generateMessage(unsigned int code,t_status *status)
 {
 	this->updateVariables(status);
+
 	map<unsigned int, t_message>::iterator it = this->msgs.find(code);
 	string msg;
 	if(it != this->msgs.end())
@@ -181,6 +189,10 @@ void Messenger::generateMessage(unsigned int code,t_status *status)
 
 		fwrite(msg.c_str(),1,msg.size(),stream);
 	}
+	else
+	{
+		ERR("Unknown error!\n");
+	}
 }
 
 /**
@@ -189,7 +201,6 @@ void Messenger::generateMessage(unsigned int code,t_status *status)
 void Messenger::updateVariables(t_status *status)
 {
 
-
 	char buffer[MAXDIGITS];
 
 	this->variables["$ADDRESSING_MODE"] = status->operand;
@@ -197,14 +208,14 @@ void Messenger::updateVariables(t_status *status)
 	sprintf(buffer,"%d",status->value);
 	this->variables["$DISTANCE"] = string(buffer);
 
-	sprintf(buffer,"%d",status->expectedOperands);
-	this->variables["$EXPECTED_OPERANDS"] = string(buffer);
+	//sprintf(buffer,"%d",status->operandFormat);
+	this->variables["$OPERAND_FORMAT"] = status->operandFormat;
 
 	sprintf(buffer,"%d",status->firstDefinition);
 	this->variables["$FIRST_DEFINITION"] = string(buffer);
 
-	sprintf(buffer,"%d",status->foundOperands);
-	this->variables["$FOUND_OPERANDS"] = string(buffer);
+	//sprintf(buffer,"%d",status->foundOperands);
+	this->variables["$FOUND_OPERANDS"] = status->operand;
 
 	this->variables["$LABEL"] = status->label;
 
@@ -216,8 +227,14 @@ void Messenger::updateVariables(t_status *status)
 
 	this->variables["$MNEMONIC"] = status->mnemonic;
 
-	sprintf(buffer,"%d",(int)(pow(2,status->operandSize-1)-1));
-	this->variables["$OPERAND_SIZE"] = string(buffer);
+	int a = 2<<(status->operandSize-1);
+	sprintf(buffer,"%d",a-1);
+	this->variables["$S_OPERAND_MAX"] = string(buffer);
+
+	sprintf(buffer,"-%d",a);
+	this->variables["$S_OPERAND_MIN"] = string(buffer);
+
+
 
 }
 

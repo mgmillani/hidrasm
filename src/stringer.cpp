@@ -171,11 +171,11 @@ list<string> stringReadWords(string text, string delimiters, char escape, char c
 
 	list<string> words;
 
-	unsigned int i,b;
+	unsigned int i,b=0;
 
 	e_state state = STATE_SKIP;
 	e_state nextState;
-	char close;
+	char close = '\'';
 
 	for(i=0 ; i<text.size() ; i++)
 	{

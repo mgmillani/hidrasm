@@ -74,6 +74,8 @@ class Instructions
 	  */
 	void print(FILE *stream);
 
+	list<t_instruction> getInstructions(string mnemonic);
+
 	private:
 
 	/**
@@ -82,8 +84,6 @@ class Instructions
 	void printInstruction(t_instruction *i,FILE *stream);
 
 	map<string,list<t_instruction> > insts;	//relaciona o mnemonico com a estrutura
-
-
 };
 
 /**
@@ -97,6 +97,6 @@ class Instructions
   * size indica quantos bits o resultado deve ter
   * a string retornanda contera somente 0s e 1s e sera terminada por um 'b'
   */
-string replaceOperands(string format,list<t_operand> operands,Registers registers,Labels labels,Addressings addressings,unsigned int size);
+string replaceOperands(string format,list<t_operand> operands,unsigned int size);
 
 #endif // INSTRUCTIONS_HPP

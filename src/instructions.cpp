@@ -61,7 +61,10 @@ void Instructions::load(string config)
 	inst.mnemonic = boost::to_upper_copy(*(it++));
 
 	if(it==words.end()) throw (eInvalidFormat);
-	inst.operandExpression = *(it++);
+	if(Expression::getExpressionType(*(it)) != TYPE_NONE)
+		inst.operandExpression = *(it++);
+	else
+		inst.operandExpression = "";
 
 	if(it==words.end()) throw (eInvalidFormat);
 	inst.addressingNames = stringSplitChar(*(it++),",");
@@ -111,6 +114,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 
 	list<t_operand> operands;
 	bool hasPendency = false;
+	bool wrongOperands = false;
 
 	for(jt=matches.begin() ; jt!=matches.end() && !inOk; jt++)
 	{
@@ -135,24 +139,30 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			for(at=addrs.begin() ; at!=addrs.end() ; at++)
 				expr.push_back(at->expression);
 		}
-		else
+		else if(i.addressingNames.front() != "-")
 		{
 			list<string>::iterator addr;
 			for(addr=i.addressingNames.begin() ; addr!=i.addressingNames.end() ; addr++)
 			{
+				ERR("addressing: %s\n",addr->c_str());
 				t_addressing a = addressings.getAddressing(*addr);
 				addrs.push_back(a);
 				expr.push_back(a.expression);
 			}
 		}
 
-
-
 		MultiExpression mulEx(expr,i.operandExpression);
 		list<t_match > matches;
 
-
-		matches = mulEx.findAllSub(operandsStr);
+		try
+		{
+			matches = mulEx.findAllSub(operandsStr);
+		}
+		catch (e_exception e)
+		{
+			wrongOperands = true;
+			continue;
+		}
 
 		//verifica se as variaveis sao do tipo adequado
 		list<t_match>::iterator imatch;
@@ -253,6 +263,9 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			inOk = true;
 	}//end for instruction
 
+	if(!inOk && wrongOperands && !hasPendency)
+		throw(eIncorrectOperands);
+
 	//se nenhuma instrucao satisfez, a linha esta incorreta
 	if(!inOk && !hasPendency)
 		throw(eInvalidFormat);
@@ -271,9 +284,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	else
 	{
 		//i contem a ultima instrucao avaliada
-		//printf("Format:%s\n",i.binFormat.c_str());
-		string code = replaceOperands(i.binFormat,operands,registers,labels,addressings,i.size);
-		//printf("Code:%s\n",code.c_str());
+		string code = replaceOperands(i.binFormat,operands,i.size);
 
 		return mem->writeNumber(code,pos,-1);
 	}
@@ -292,7 +303,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
   * size indica quantos bits o resultado deve ter
   * a string retornanda contera somente 0s e 1s e sera terminada por um 'b'
   */
-string replaceOperands(string format,list<t_operand> operands,Registers registers,Labels labels,Addressings addressings,unsigned int size)
+string replaceOperands(string format,list<t_operand> operands,unsigned int size)
 {
 
 	typedef enum {STATE_COPY,STATE_NUM,STATE_REGISTER,STATE_MODE,STATE_ADDRESS,STATE_I_OPERAND,STATE_W_OPERAND} e_state;
@@ -304,16 +315,16 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 	e_state state = STATE_COPY;
 	e_state nextState = STATE_COPY;
 	unsigned int r,w;
-	unsigned int b;
+	unsigned int b=0;
 	string number;
-	int value;
+	int value = 0;
 
 	string result(size+1,'0');
 	list<string> addresses;
 	result[size] = 'b';
 
 	t_operand op;
-	e_type type;
+	e_type type = TYPE_NONE;
 
 	unsigned int defSize = 0;	//tamanho padrao dos enderecos
 	const char *formatStr = format.c_str();
@@ -474,10 +485,10 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 				{
 					//propaga o sinal, se necessario
 					int k;
-					for(k=0 ; k<(value-number.size()+1) ; k++)
+					for(k=0 ; k<(int)(value-number.size()+1) ; k++)
 						result[w++] = op.value[0];
 					//trunca o numero, escrevendo somente os bits menos significativos
-					for(k = value-k ; k<((int)number.size()-1) ; k++)
+					for(k = value-k ; k<(int)(number.size()-1) ; k++)
 					{
 						result[w++] = op.value[k];
 					}
@@ -540,6 +551,15 @@ string replaceOperands(string format,list<t_operand> operands,Registers register
 		defSize = 0;
 
 	return result;
+}
+
+list<t_instruction> Instructions::getInstructions(string mnemonic)
+{
+	map<string, list<t_instruction> >::iterator it = this->insts.find(mnemonic);
+	if(it != this->insts.end())
+		return it->second;
+	else
+		return list<t_instruction>();
 }
 
 /**
