@@ -144,7 +144,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			list<string>::iterator addr;
 			for(addr=i.addressingNames.begin() ; addr!=i.addressingNames.end() ; addr++)
 			{
-				ERR("addressing: %s\n",addr->c_str());
 				t_addressing a = addressings.getAddressing(*addr);
 				addrs.push_back(a);
 				expr.push_back(a.expression);
@@ -264,7 +263,9 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	}//end for instruction
 
 	if(!inOk && wrongOperands && !hasPendency)
+	{
 		throw(eIncorrectOperands);
+	}
 
 	//se nenhuma instrucao satisfez, a linha esta incorreta
 	if(!inOk && !hasPendency)

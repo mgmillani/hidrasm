@@ -60,14 +60,7 @@ Messenger::~Messenger()
 */
 Messenger::Messenger(FILE *filename,FILE *warningStream, FILE *errorStream)
 {
-	this->errorStream = errorStream;
-	this->warningStream = warningStream;
-
-	this->msgs = map<unsigned int,t_message>();
-	this->variables = map<string,string>();
-	this->errors = 0;
-	this->warnings = 0;
-	this->load(filename);
+	this->init(fl,warningStream,errorStream);
 }
 
 /**
@@ -75,15 +68,25 @@ Messenger::Messenger(FILE *filename,FILE *warningStream, FILE *errorStream)
 */
 Messenger::Messenger(const char *filename,FILE *warningStream, FILE *errorStream)
 {
+	FILE *fl = fopen(filename,"rb");
+	this->init(fl,warningStream,errorStream);
+	fclose(fl);
+
+}
+
+void Messenger::init(FILE *fl,FILE *warningStream, FILE *errorStream)
+{
 	this->errorStream = errorStream;
 	this->warningStream = warningStream;
 
 	this->msgs = map<unsigned int,t_message>();
 	this->variables = map<string,string>();
+	this->variables["\\n"] = "\n";
+	this->variables["\\t"] = "\t";
+	this->variables["\\r"] = "\r";
 	this->errors = 0;
 	this->warnings = 0;
 	this->load(filename);
-
 }
 
 /**

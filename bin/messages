@@ -2,7 +2,7 @@
 0 e ERRO (linha $LINE):
 1 w AVISO (linha $LINE):
 2 e Instrução ou diretiva desconhecida: $MNEMONIC
-3 e Número incorreto de operandos para $MNEMONIC: esperava-se $EXPECTED_OPERANDS, encontrou-se $FOUND_OPERANDS
+3 e Número incorreto de operandos para $MNEMONIC: esperava-se $OPERAND_FORMAT, encontrou-se $FOUND_OPERANDS
 4 e Endereço relativo ao PC muito grande: $LABEL está a uma distância de $DISTANCE bytes do PC, mas o máximo possível é $OPERAND_SIZE bytes
 5 e Modo de endereçamento desconhecido: $ADDRESSING_MODE
 6 e Label $LABEL redefinida. Primeira definição: linha $FIRST_DEFINITION
