@@ -80,6 +80,11 @@ class Assembler
 	void createBinaryV3(FILE *fl,Memory *memory);
 
 	/**
+	  * se ocorreu algum erro durante o processo de montagem
+	  */
+	bool hasErrors();
+
+	/**
 	  * escreve a situacao atual dos atributos do objeto
 	  */
 	void print(FILE *stream);
@@ -102,7 +107,7 @@ class Assembler
 	  * se for encontrada a definicao de uma label, acrescenta-a as Labels conhecidas
 	  * retorna a posicao da memoria em que a proxima linha deve comecar
 	  */
-	unsigned int assembleLine(string line, Memory *memory,unsigned int byte,unsigned int lineNumber);
+	unsigned int assembleLine(string line, Memory *memory,unsigned int byte,unsigned int lineNumber,t_status *status);
 
 	/**
 	  * faz o parsing de uma linha, escrevendo a label definida em defLabel,
@@ -113,7 +118,7 @@ class Assembler
 	/**
 	  * recalcula o valor das labels, retornando uma nova lista de operandos
 	  */
-	list<t_operand> recalculateOperands(list<t_operand> operands);
+	list<t_operand> recalculateOperands(list<t_operand> operands,t_status *status);
 
 };
 

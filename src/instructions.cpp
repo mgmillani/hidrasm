@@ -24,6 +24,7 @@
 
 #include "instructions.hpp"
 #include "addressings.hpp"
+#include "messenger.hpp"
 #include "registers.hpp"
 #include "expression.hpp"
 #include "operands.hpp"
@@ -94,7 +95,7 @@ bool Instructions::isInstruction(string mnemonic)
   *	gera o codigo binario de uma instrucao, escrevendo-o na memoria
   * retorna o numero de bytes escritos na memoria
   */
-unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,unsigned int pos,stack<t_pendency> *pendencies,Addressings addressings,Labels labels, Registers registers)
+unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,unsigned int pos,stack<t_pendency> *pendencies,Addressings addressings,Labels labels, Registers registers,t_status *status)
 {
 
 	//busca todas as instrucoes com o dado mnemonico
@@ -278,6 +279,17 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 		p.operands = operands;
 		p.binFormat = i.binFormat;
 		p.size = i.size;
+		p.status = (t_status *)malloc(sizeof(t_status));
+
+		memcpy(p.status,status,sizeof(*status));
+
+		size_t size = strlen(status->mnemonic);
+		p.status->mnemonic = (char *)malloc(size+1);
+		memcpy(p.status->mnemonic,status->mnemonic,size+1);
+
+		size = strlen(status->operand);
+		p.status->operand = (char *)malloc(size+1);
+		memcpy(p.status->operand,status->operand,size+1);
 
 		pendencies->push(p);
 		return i.size/8;

@@ -165,9 +165,10 @@ Memory Assembler::assembleCode(string code)
 	list<string>::iterator it;
 	unsigned int line=1;
 	//monta cada linha
+	t_status status;
 	for(it=lines.begin() ; it!=lines.end() ; it++,line++)
 	{
-		pos = this->assembleLine(*it,&memory,pos,line);
+		pos = this->assembleLine(*it,&memory,pos,line,&status);
 	}
 
 	//resolve as pendencias
@@ -176,14 +177,24 @@ Memory Assembler::assembleCode(string code)
 		t_pendency pend = this->pendecies.top();
 		this->pendecies.pop();
 
-		list<t_operand> operands = this->recalculateOperands(pend.operands);
-		string binFormat = pend.binFormat;
-		unsigned int size = pend.size;
-		unsigned int pos = pend.byte;
-		string result = replaceOperands(binFormat, operands, size);
+		try
+		{
+			list<t_operand> operands = this->recalculateOperands(pend.operands,pend.status);
+			string binFormat = pend.binFormat;
+			unsigned int size = pend.size;
+			unsigned int pos = pend.byte;
 
-		memory.writeNumber(result,pos,-1);
-
+			string result = replaceOperands(binFormat, operands, size);
+			memory.writeNumber(result,pos,-1);
+		}
+		catch(e_exception e)
+		{
+			this->messenger.generateMessage(Messenger::exceptionToMessage(e),pend.status);
+		}
+		//free(pend.status->label);
+		free(pend.status->mnemonic);
+		free(pend.status->operand);
+		free(pend.status);
 	}
 
 	return memory;
@@ -197,60 +208,59 @@ Memory Assembler::assembleCode(string code)
 * se for encontrada a definicao de uma label, acrescenta-a as Labels conhecidas
 * retorna a posicao da memoria em que a proxima linha deve comecar
 */
-unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int byte,unsigned int lineNumber)
+unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int byte,unsigned int lineNumber,t_status *status)
 {
-
-	t_status status;
-	status.value = 0;
-	status.lastOrgLine = 0;
-	status.position = 0;
-	status.foundOperands = 0;
-	//status.expectedOperands = 0;
-	status.operandSize = 0;
-	status.line = lineNumber;
-	status.position = byte;
+	status->value = 0;
+	status->lastOrgLine = 0;
+	status->position = 0;
+	status->foundOperands = 0;
+	status->operandSize = 0;
+	status->line = lineNumber;
+	status->position = byte;
 	string defLabel;
 	string mnemonic;
 	string operands;
 	this->parseLine(line,&defLabel,&mnemonic,&operands);
 	boost::to_upper(mnemonic);
-	status.label = defLabel;
-	status.firstDefinition = 0;
-	status.mnemonic = mnemonic;
-	status.operand = operands;
+	status->firstDefinition = 0;
+	status->label = (char *)defLabel.c_str();
+	status->mnemonic = (char *)mnemonic.c_str();
+	status->operand = (char *)operands.c_str();
+
 	//define a label
 	if(defLabel!="")
 	{
 		try
 		{
-			this->labels.define(defLabel,status.position,status.line);
+			this->labels.define(defLabel,status->position,status->line);
 		}
 		catch(e_exception e)
 		{
 			if(e == eRedefinedLabel)
 			{
-				status.firstDefinition = this->labels.line(defLabel);
-				this->messenger.generateMessage(mRedefinedLabel,&status);
+				status->firstDefinition = this->labels.line(defLabel);
+				this->messenger.generateMessage(mRedefinedLabel,status);
 			}
 		}
 	}
 	//se for uma instrucao, monta-a
 	string a = mnemonic;
+	if(a == "")
+		return byte;
 	if(this->inst.isInstruction(mnemonic))
 	{
 		try
 		{
-			byte+=this->inst.assemble(a,operands,memory,byte,&this->pendecies,this->addr,this->labels,this->regs);
+			byte+=this->inst.assemble(a,operands,memory,byte,&this->pendecies,this->addr,this->labels,this->regs,status);
 		}
 		catch(e_exception e)
 		{
-			ERR("Exception %u\n",e);
 			list<t_instruction> insts = this->inst.getInstructions(mnemonic);
 			list<t_instruction>::iterator it;
 			for(it=insts.begin() ; it!=insts.end() ; it++)
 			{
-				status.operandFormat = it->operandExpression;
-				this->messenger.generateMessage(Messenger::exceptionToMessage(e),&status);
+				status->operandFormat = (char *)it->operandExpression.c_str();
+				this->messenger.generateMessage(Messenger::exceptionToMessage(e),status);
 			}
 		}
 	}
@@ -259,21 +269,11 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	{
 		try
 		{
-			byte = this->directives.execute(mnemonic,operands,this->labels,&this->pendecies,memory,byte);
+			byte = this->directives.execute(mnemonic,operands,this->labels,&this->pendecies,memory,byte,status);
 		}
 		catch(e_exception e)
 		{
-			switch(e)
-			{
-				case eUnknownMnemonic:
-					this->messenger.generateMessage(mUnknownInstruction,&status);
-					break;
-				case eIncorrectOperands:
-					this->messenger.generateMessage(mIncorrectOperands,&status);
-					break;
-				default:
-					break;
-			}
+			this->messenger.generateMessage(Messenger::exceptionToMessage(e),status);
 		}
 	}
 
@@ -487,7 +487,7 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 /**
   * recalcula o valor das labels, retornando uma nova lista de operandos
   */
-list<t_operand> Assembler::recalculateOperands(list<t_operand> operands)
+list<t_operand> Assembler::recalculateOperands(list<t_operand> operands,t_status *status)
 {
 	list<t_operand>::iterator ot;
 	list<t_operand> result;
@@ -495,11 +495,22 @@ list<t_operand> Assembler::recalculateOperands(list<t_operand> operands)
 	{
 		t_operand o = *ot;
 		if(o.type == TYPE_LABEL)
+		{
+			status->label = (char *)o.name.c_str();
 			o.value = Number::toBin(this->labels.value(o.name));
+		}
 		result.push_back(o);
 	}
 
 	return result;
+}
+
+/**
+	* se ocorreu algum erro durante o processo de montagem
+	*/
+bool Assembler::hasErrors()
+{
+	return this->messenger.numberErrors() > 0;
 }
 
 /**

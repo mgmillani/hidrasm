@@ -119,7 +119,14 @@ int main(int argc,char *argv[])
 		string code(codeP);
 
 		Memory mem = assembler.assembleCode(code);
-		assembler.createBinaryV3(output,&mem);
+
+		if(!assembler.hasErrors())
+		{
+			if(version == 3)
+				assembler.createBinaryV3(output,&mem);
+			else if(version == 0)
+				assembler.createBinaryV0(output,&mem);
+		}
 
 		free(codeP);
 	}

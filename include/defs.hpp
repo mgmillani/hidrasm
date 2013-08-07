@@ -43,9 +43,26 @@
 
 using namespace std;
 
+typedef struct s_status
+{
+	unsigned int line;
+	unsigned int lastOrgLine;	//a linha do codigo fonte em que ocorreu o ultimo ORG
+	unsigned int position;	//a posicao do proximo byte a ser escrito
+	unsigned int foundOperands;
+	//unsigned int expectedOperands;
+	unsigned int operandSize;	//numero de bits do operando
+	unsigned int firstDefinition; //numero da linha da primeira definicao da label
+	int value;	//valor do operando, sem truncar
+	char *operandFormat; //expressao para os operandos
+	char *operand;	//o operando junto com seu modo de enderecamento
+	char *label;	//a ultima label lida (referencia ou definicao)
+	char *mnemonic;	//mnemonico da ultima instrucao ou diretiva lida
+}t_status;
+
 typedef struct s_pendency
 {
 	unsigned int byte;  //posicao onde comeca a instrucao
+	struct s_status *status;
 
 	list<t_operand> operands;
 	string binFormat;   //formato binario da instrucao a ser montada

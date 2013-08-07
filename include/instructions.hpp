@@ -27,6 +27,7 @@
 #include <map>
 
 #include "addressings.hpp"
+#include "messenger.hpp"
 #include "registers.hpp"
 #include "operands.hpp"
 #include "labels.hpp"
@@ -67,7 +68,7 @@ class Instructions
   *	gera o codigo binario de uma instrucao, escrevendo-o na memoria
   * retorna o numero de bytes escritos na memoria
   */
-	unsigned int assemble(string mnemonic, string operandsStr,Memory *mem,unsigned int pos,stack<t_pendency> *pendencies,Addressings addressings,Labels labels, Registers registers);
+	unsigned int assemble(string mnemonic, string operandsStr,Memory *mem,unsigned int pos,stack<t_pendency> *pendencies,Addressings addressings,Labels labels, Registers registers,t_status *status);
 
 	/**
 	  * escreve as caracteristicas do conjunto de instrucoes em stream

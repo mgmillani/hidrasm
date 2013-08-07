@@ -17,6 +17,8 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <string>
 #include <list>
@@ -36,8 +38,10 @@ using namespace std;
 /**
 * executa a diretiva, retornando em qual byte a montagem deve continuar
 */
-unsigned int Directives::execute(string directive, string operands, Labels labels, stack<t_pendency> *pendencies, Memory *memory,unsigned int currentByte)
+unsigned int Directives::execute(string directive, string operands, Labels labels, stack<t_pendency> *pendencies, Memory *memory,unsigned int currentByte,struct s_status *status)
 {
+	if(!this->isDirective(directive))
+		throw eUnknownMnemonic;
 	Number n;
 	unsigned int size = 0;
 	list<string> ops = stringSplitCharProtected(operands," ,\t","'\"",'\\');
@@ -87,6 +91,21 @@ unsigned int Directives::execute(string directive, string operands, Labels label
 			p.operands.push_back(op);
 			p.binFormat = "a";
 			p.size = size*8;
+			p.status = (t_status*)malloc(sizeof(*status));
+			memcpy(p.status,status,sizeof(*status));
+
+			size_t size = strlen(status->label);
+			p.status->label = (char *)malloc(size+1);
+			memcpy(p.status->label,status->label,size+1);
+
+			size = strlen(status->mnemonic);
+			p.status->mnemonic = (char *)malloc(size+1);
+			memcpy(p.status->mnemonic,status->mnemonic,size+1);
+
+			size = strlen(status->operand);
+			p.status->operand = (char *)malloc(size+1);
+			memcpy(p.status->operand,status->operand,size+1);
+
 			pendencies->push(p);
 		}
 		currentByte += size;
