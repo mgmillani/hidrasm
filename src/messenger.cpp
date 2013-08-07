@@ -58,7 +58,7 @@ Messenger::~Messenger()
 /**
 *	inicializa e carrega as mensagens do arquivo
 */
-Messenger::Messenger(FILE *filename,FILE *warningStream, FILE *errorStream)
+Messenger::Messenger(FILE *fl,FILE *warningStream, FILE *errorStream)
 {
 	this->init(fl,warningStream,errorStream);
 }
@@ -86,7 +86,7 @@ void Messenger::init(FILE *fl,FILE *warningStream, FILE *errorStream)
 	this->variables["\\r"] = "\r";
 	this->errors = 0;
 	this->warnings = 0;
-	this->load(filename);
+	this->load(fl);
 }
 
 /**

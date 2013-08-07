@@ -86,6 +86,8 @@ class Messenger
 	Messenger(const char *filename,FILE *warningStream = stderr, FILE *errorStream = stderr);
 	Messenger(FILE *filename,FILE *warningStream = stderr, FILE *errorStream = stderr);
 
+	void init(FILE *fl,FILE *warningStream, FILE *errorStream);
+
 	~Messenger();
 
 	/**
