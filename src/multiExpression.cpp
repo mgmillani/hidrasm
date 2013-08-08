@@ -91,7 +91,7 @@
 		}
 
 		this->regexStr = regexStr;
-		this->regexp = boost::regex(regexStr);
+		this->regexp = boost::regex(regexStr,boost::regex::icase);
 
 	}
 
@@ -113,31 +113,33 @@
 		unsigned int i;
 		list<t_match> vars;
 
-
+		/*
 		for(i=0 ; i<what.size() ; i++)
 		{
 			string whatStr = what[i];
+			ERR("What[%u]: %s\n",i,whatStr.c_str());
 		}
+		*/
 
-
-		for(i=2 ; i<what.size() ; i+=this->numSub+1)
+		for(i=2 ; i<what.size() ; i+=this->numSub*3+1)
 		{
 			t_match m;
 			for(int j=0 ; j<TYPE_TOTAL ; j++)
 				m.subtype[j] = 0;
 			//determina o subtipo do elemento encontrado
-			for(unsigned int j=0 ; j<this->numSub ; j++)
+
+			for(unsigned int j=0,k=0 ; j<this->numSub ; j++,k+=3)
 			{
-				if(what[i+j].matched)
+				if(what[i+k].matched)
 				{
-					string whatStr = what[i+j];
-					m.element = whatStr;
+					m.element = what[i+k];
+					m.operation = what[i+k+1];
+					m.operand = what[i+k+2];
 
 					m.subtype[varToNum(this->subvars[j])] = 1;
 					m.indexes.push_back(j);
 				}
 			}
-
 			vars.push_back(m);
 		}
 

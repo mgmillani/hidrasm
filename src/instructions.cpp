@@ -175,16 +175,17 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 
 		for(imatch=matches.begin() ; imatch!=matches.end() && opOk ; imatch++)
 		{
-
 			opOk = false;
 			potentialLabel = false;
 			t_match m = *imatch;
 			t_operand op;
 			op.name = m.element;
+			//ERR("Element: %s\n",m.element.c_str());
 
 			//determina o tipo do operando
 			if(m.subtype[TYPE_REGISTER] || m.subtype[TYPE_ANYTHING])
 			{
+				//ERR("Reg\n");
 				if(registers.exists(m.element))
 				{
 					op.type = TYPE_REGISTER;
@@ -210,6 +211,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			}
 			if(m.subtype[TYPE_LABEL] || m.subtype[TYPE_ANYTHING] || m.subtype[TYPE_ADDRESS])
 			{
+				//ERR("Label\n");
 				if(labels.exists(m.element))
 				{
 					op.type = TYPE_LABEL;

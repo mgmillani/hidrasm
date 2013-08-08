@@ -32,6 +32,8 @@ typedef struct s_match
 	unsigned char type;	//tipo da variavel na expressao
 	unsigned char subtype[TYPE_TOTAL]; //tipo da variavel nas subexpressoes
 	string element;	//a variavel encontrada
+	string operation;	//o operador, se houver
+	string operand;	//o operando, se houver operador
 	string subCode[TYPE_TOTAL]; //codigo da subexpressao
 	list<unsigned int> indexes; //os indices das subexpressoes matched
 }t_match;

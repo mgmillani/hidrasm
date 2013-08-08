@@ -401,7 +401,10 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 	{
 		char c = line[i];
 		if(c == ';')
+		{
+			i--;
 			break;
+		}
 		switch(state)
 		{
 			case STATE_INI:
@@ -477,6 +480,15 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 	//se uma palavra ainda deve ser lida
 	if(read)
 	{
+
+		if(ISWHITESPACE(line[i]))
+		{
+			i--;
+			while(ISWHITESPACE(line[i]))
+				i--;
+			i++;
+		}
+
 		if(*mnemonic == "")
 			*mnemonic = line.substr(b,i-b);
 		else
