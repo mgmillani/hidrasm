@@ -28,11 +28,114 @@
 
 using namespace std;
 
-Number::Number(){}
+Number::Number()
+{
+	this->numDigits = 0;
+	this->digits = NULL;
+}
+
 /**
-* determina o tipo do numero (decimal, binario ou hexadecimal),retornando-o
-* retorna INVALID se o numero nao estiver no formato adequado
-*/
+  * inicializa o numero a partir de uma string binaria, decimal ou hexadecimal
+  */
+Number::Number(string n)
+{
+
+	e_numType type = numberType(n);
+	if(type == INVALID)
+		throw(eInvalidFormat);
+	if(type == DECIMAL)
+	{
+		int value = toInt(n);
+		this->digits = (unsigned char *)malloc(sizeof(value));
+		unsigned int i;
+		for(i=0 ; i<sizeof(value) ; i++)
+		{
+			this->digits[i] = value;
+			value >>= 8;
+		}
+		this->numDigits = sizeof(value);
+	}
+	else
+	{
+		this->digits = toByteArray(n,&this->numDigits);
+	}
+
+}
+
+Number::~Number()
+{
+	if(this->digits != NULL)
+		free(this->digits);
+}
+
+/**
+  * aplica a operacao dada usando n como o segundo operando
+  * escreve o resultado neste objeto
+  */
+void Number::operate(char operation,Number n)
+{
+
+	switch(operation)
+	{
+		//a - b = a + (-b)
+		case '-':
+			n.baseComplement();
+		case '+':
+			{
+				unsigned int i;
+				int carry = 0;
+				for(i=0 ; i<n.numDigits && i<this->numDigits ; i++)
+				{
+					unsigned int a = this->digits[i];
+					unsigned int b = n.digits[i];
+					this->digits[i] = a+b+carry;
+					carry = (a+b+carry) >> 8;
+				}
+				//se o outro numero for menor, apenas propaga o carry
+				if(i<this->numDigits)
+				{
+					while(carry > 0 && i<this->numDigits)
+					{
+						unsigned int a = this->digits[i];
+						this->digits[i] = a+carry;
+						carry = (a+carry)>>8;
+						i++;
+					}
+					//se existir carry, sera necessario aumentar o numero
+					if(carry>0)
+					{
+						this->numDigits++;
+						this->digits = (unsigned char *)realloc(this->digits,this->numDigits);
+						this->digits[this->numDigits-1] = carry;
+					}
+				}
+				//se o outro numero for maior, sera necessario aumentar o atual
+				else if(i<n.numDigits)
+				{
+					this->numDigits = n.numDigits+1;
+					this->digits = (unsigned char *)realloc(this->digits,this->numDigits);
+
+					//adiciona os digitos que faltaram
+					for(; i<n.numDigits ; i++)
+					{
+						unsigned int b = n.digits[i];
+						this->digits[i] = b+carry;
+						carry = (b+carry)>>8;
+					}
+					this->digits[this->numDigits-1] = carry;
+				}
+			}
+			break;
+		default:
+			throw(eInvalidOperation);
+	}
+
+}
+
+/**
+  * determina o tipo do numero (decimal, binario ou hexadecimal),retornando-o
+  * retorna INVALID se o numero nao estiver no formato adequado
+  */
 e_numType Number::numberType(string n)
 {
 	if(n.size()==0)
@@ -94,10 +197,10 @@ e_numType Number::numberType(string n)
 
 
 /**
-	* converte os caracteres do numero para seus respectivos valores
-	* o vetor values deve ser grande o suficiente
-	* o numero n deve ser valido
-	*/
+  * converte os caracteres do numero para seus respectivos valores
+  * o vetor values deve ser grande o suficiente
+  * o numero n deve ser valido
+  */
 void Number::convertDigits(string n, unsigned char *values,e_numType type)
 {
 	int min = 0;
@@ -142,15 +245,15 @@ void Number::convertDigits(string n, unsigned char *values,e_numType type)
 }
 
 /**
-*	converte o numero para um inteiro
-*	caso seja maior que um, trunca-o, retornando somente os bits menos significativos
-* o ultimo caractere determina o tipo do numero:
-* b/B - binario
-* d/D - decimal
-* h/H - hexadecimal
-* nada/algarismo - decimal
-* se for encontrado um numero desconhecido, retorna 0 (REVER ISSO)
-*/
+  *	converte o numero para um inteiro
+  * caso seja maior que um, trunca-o, retornando somente os bits menos significativos
+  * o ultimo caractere determina o tipo do numero:
+  * b/B - binario
+  * d/D - decimal
+  * h/H - hexadecimal
+  * nada/algarismo - decimal
+  * se for encontrado um numero desconhecido, retorna 0 (REVER ISSO)
+  */
 int Number::toInt(string n)
 {
 	int base = 2;
@@ -264,9 +367,9 @@ string Number::toBin(unsigned int n)
 }
 
 /**
-	* converte uma string de caracteres para um numero binario (terminado por 'b')
-	* cada carcatere sera convertido para 8 bits na ordem em que aparecer
-	*/
+  * converte uma string de caracteres para um numero binario (terminado por 'b')
+  * cada carcatere sera convertido para 8 bits na ordem em que aparecer
+  */
 string Number::stringToBin(string str)
 {
 
@@ -303,8 +406,8 @@ string Number::stringToBin(string str)
 }
 
 /**
-	* escreve o valor binario de um digito hexadecimal em dest
-	*/
+  * escreve o valor binario de um digito hexadecimal em dest
+  */
 void Number::writeHexaDigitAsBin(char digit, char *dest)
 {
 	unsigned int v;
@@ -327,35 +430,63 @@ void Number::writeHexaDigitAsBin(char digit, char *dest)
 }
 
 /**
-	* retorna um string contendo apenas os digitos do numero, sem 0s a esquerda
-	* e sem indicativos de sua base
-	*/
+  * retorna um string contendo apenas os digitos do numero, sem 0s a esquerda
+  * e sem indicativos de sua base
+  */
 string Number::getMinDigits(string n)
 {
-	unsigned int i;
-	for(i=0 ; i<n.size() ; i++)
+	unsigned int i = 0;
+	bool negative = false;
+	if(n[0] == '-')
+	{
+		negative = true;
+		i++;
+	}
+	for(; i<n.size() ; i++)
 	{
 		if(n[i] != '0')
 			break;
 	}
+	string result;
 	char last = toupper(n[n.size()-1]);
 	//se o ultimo caractere indicar a base
 	if(last == 'D' || last == 'B' || last == 'H')
-		return n.substr(i,n.size()-i-1);
+		result = n.substr(i,n.size()-i-1);
 	else
-		return n.substr(i,n.size()-i);
+		result = n.substr(i,n.size()-i);
 
+	if(negative)
+		return "-" + result;
+	else
+		return result;
 
 }
 
 /**
-*	converte o numero para um array de bytes com notacao little-endian
-*	o ultimo caractere determina o tipo do numero:
-*	b/B - binario
-*	h/H - hexadecimal
-*	escreve o numero de bytes do numero em size
-* nao suporta numeros decimais
-*/
+  * faz o complemento de 2 do numero, ou seja, troca o sinal
+  */
+void Number::baseComplement()
+{
+
+	unsigned int i;
+	unsigned int carry = 1;
+	for(i=0 ; i<this->numDigits ; i++)
+	{
+		int a = ~this->digits[i];
+		this->digits[i] = a+carry;
+		carry = (a+carry) >> 8;
+	}
+
+}
+
+/**
+  *	converte o numero para um array de bytes com notacao little-endian
+  *	o ultimo caractere determina o tipo do numero:
+  *	b/B - binario
+  *	h/H - hexadecimal
+  *	escreve o numero de bytes do numero em size
+  * nao suporta numeros decimais
+  */
 unsigned char *Number::toByteArray(string n, unsigned int *size)
 {
 
@@ -420,8 +551,8 @@ unsigned char *Number::toByteArray(string n, unsigned int *size)
 }
 
 /**
-	* verifica se o dado numero eh valido
-	*/
+  * verifica se o dado numero eh valido
+  */
 bool Number::exists(string number)
 {
 
@@ -437,8 +568,8 @@ bool Number::exists(string number)
 }
 
 /**
-	* verifica se o elemento passado eh uma string valida
-	*/
+  * verifica se o elemento passado eh uma string valida
+  */
 bool Number::isString(string element)
 {
 
@@ -453,6 +584,7 @@ bool Number::isString(string element)
 		return false;
 	return true;
 }
+
 
 
 

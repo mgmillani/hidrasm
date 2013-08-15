@@ -74,6 +74,7 @@ typedef enum Exceptions
 	eFileNotFound,
 	eUnknownMnemonic,
 	eInvalidFormat,
+	eInvalidOperation,
 	eIncorrectOperands,
 	eUnmatchedExpression,
 	eOpenString,

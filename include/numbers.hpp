@@ -29,6 +29,18 @@ class Number
 {
 	public:
 	Number();
+	/**
+	  * inicializa o numero a partir de uma string binaria, decimal ou hexadecimal
+	  */
+	Number(string n);
+
+	~Number();
+
+	/**
+	  * aplica a operacao dada usando n como o segundo operando
+	  * escreve o resultado neste objeto
+	  */
+	void operate(char operation,Number n);
 
 	/**
 	  *	converte o numero para um inteiro
@@ -65,6 +77,11 @@ class Number
 	static string getMinDigits(string n);
 
 	/**
+	  * faz o complemento de 2 do numero, ou seja, troca o sinal
+	  */
+	void baseComplement();
+
+	/**
 	  *	converte o numero para um array de bytes com notacao little-endian
 	  *	o ultimo caractere determina o tipo do numero:
 	  *	b/B - binario
@@ -97,6 +114,10 @@ class Number
 	  * verifica se o elemento passado eh uma string valida
 	  */
 	static bool isString(string element);
+
+	unsigned int numDigits;
+	unsigned char *digits; //os digitos do numero, em base 256, em notacao little-endian
+
 };
 
 #endif // NUMBERS_HPP

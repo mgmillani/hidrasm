@@ -203,7 +203,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				}
 				else if(Number::isString(m.element))
 				{
-
 					op.type = TYPE_NUMBER;
 					op.value = Number::stringToBin(m.element);
 					opOk=true;
@@ -221,6 +220,32 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				else
 					potentialLabel = true;
 			}
+
+			//se houver uma operacao, executa-a
+			if(m.operation != "" && !potentialLabel)
+			{
+				Number operand;
+				if(labels.exists(m.operand))
+					operand = Number(Number::toBin(m.operand));
+				else
+				{
+					try
+					{
+						operand = Number(m.operand);
+					}
+					catch(e_exception e)
+					{
+						potentialLabel = true;
+					}
+				}
+
+				if(!potentialLabel)
+				{
+
+					op.value = Number::binEvaluate(op.value,m.operation[0],operand);
+				}
+			}
+
 			if(opOk || potentialLabel)
 			{
 				//determina o codigo do modo de enderecamento
