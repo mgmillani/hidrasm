@@ -222,27 +222,31 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			}
 
 			//se houver uma operacao, executa-a
-			if(m.operation != "" && !potentialLabel)
+			if(m.operation != "" && (!potentialLabel || opOk))
 			{
-				Number operand;
+				bool opPotentialLabel = false;
+				Number *operand = NULL;
 				if(labels.exists(m.operand))
-					operand = Number(Number::toBin(m.operand));
+				{
+					operand = new Number(Number::toBin(labels.value(m.operand)));
+				}
 				else
 				{
 					try
 					{
-						operand = Number(m.operand);
+						operand = new Number(m.operand);
 					}
 					catch(e_exception e)
 					{
-						potentialLabel = true;
+						opPotentialLabel = true;
 					}
 				}
 
-				if(!potentialLabel)
+				if(!opPotentialLabel)
 				{
-
-					op.value = Number::binEvaluate(op.value,m.operation[0],operand);
+					Number result(op.value);
+					result.operate(m.operation[0],*operand);
+					op.value = result.toBin();
 				}
 			}
 

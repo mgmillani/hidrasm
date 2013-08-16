@@ -46,14 +46,15 @@ Number::Number(string n)
 	if(type == DECIMAL)
 	{
 		int value = toInt(n);
-		this->digits = (unsigned char *)malloc(sizeof(value));
+		unsigned int size = (LOG2(value)+9)/8;
+		this->digits = (unsigned char *)malloc(sizeof(size));
 		unsigned int i;
-		for(i=0 ; i<sizeof(value) ; i++)
+		for(i=0 ; i<size ; i++)
 		{
 			this->digits[i] = value;
 			value >>= 8;
 		}
-		this->numDigits = sizeof(value);
+		this->numDigits = size;
 	}
 	else
 	{
@@ -65,7 +66,10 @@ Number::Number(string n)
 Number::~Number()
 {
 	if(this->digits != NULL)
+	{
 		free(this->digits);
+		this->digits = NULL;
+	}
 }
 
 /**
@@ -364,6 +368,34 @@ string Number::toBin(unsigned int n)
 	string end(result);
 	free(result);
 	return end;
+}
+
+/**
+  * converte o numero do objeto para uma string binaria (terminada por 'b')
+  */
+string Number::toBin()
+{
+
+	unsigned int size = 8*this->numDigits+2;
+	char *digits = (char *)malloc(size);
+	unsigned int i,pos = size-3;
+	for(i=0 ; i<this->numDigits ; i++)
+	{
+		unsigned int j;
+		unsigned char v = this->digits[i];
+		for(j=0;j<8;j++,pos--)
+		{
+			digits[pos] = '0' + (v&1);
+			v >>= 1;
+		}
+	}
+	digits[size-2] = 'b';
+	digits[size-1] = '\0';
+
+	string r(digits);
+	free(digits);
+
+	return r;
 }
 
 /**

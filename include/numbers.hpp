@@ -60,6 +60,11 @@ class Number
 	static string toBin(unsigned int n);
 
 	/**
+	  * converte o numero do objeto para uma string binaria (terminada por 'b')
+	  */
+	string toBin();
+
+	/**
 	  * converte uma string de caracteres para um numero binario (terminado por 'b')
 	  * cada carcatere sera convertido para 8 bits na ordem em que aparecer
 	  */
