@@ -27,6 +27,79 @@
 #include "defs.hpp"
 
 using namespace std;
+
+/**
+  * quebra a string em linhas
+  * funciona tanto com \r, \n e \r\n
+  */
+list<string> stringGetLines(string text)
+{
+	typedef enum {State_Ini, State_N, State_R} e_state;
+	e_state state = State_Ini;
+	list<string> result;
+
+	unsigned int i;
+	unsigned int b=0;
+	for(i=0 ; i<text.size() ; i++)
+	{
+		char c = text[i];
+		switch(state)
+		{
+			case State_Ini:
+				if(c == '\n')
+				{
+					state = State_N;
+					result.push_back(text.substr(b,i-b));
+				}
+				else if(c == '\r')
+				{
+					state = State_R;
+					result.push_back(text.substr(b,i-b));
+				}
+				break;
+			case State_N:
+				if(c == '\n')
+				{
+					result.push_back("");
+				}
+				else if(c=='\r')
+				{
+					result.push_back("");
+					state = State_R;
+				}
+				else
+				{
+					b=i;
+					state = State_Ini;
+				}
+
+				break;
+			case State_R:
+				if(c == '\n')
+				{
+					state = State_N;
+				}
+				else if(c == '\r')
+				{
+					result.push_back("");
+				}
+				else
+				{
+					b=i;
+					state = State_Ini;
+				}
+
+				break;
+		}
+	}
+
+	if(state==State_Ini)
+	{
+		result.push_back(text.substr(b,i-b));
+	}
+
+	return result;
+}
 /**
 	*	quebra a string nos divisores passados
 	* nao acrescenta elementos vazios a lista

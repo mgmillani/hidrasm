@@ -17,6 +17,9 @@ using namespace std;
   */
 void Operands::solveOperation(t_operand *op,Labels labels,t_status *status)
 {
+	if(op->operation == "")
+		return;
+
 	bool opPotentialLabel = false;
 	Number *operand = NULL;
 	if(status != NULL)

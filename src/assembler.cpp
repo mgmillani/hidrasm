@@ -153,7 +153,7 @@ Assembler::Assembler(FILE *file,Messenger messenger)
 Memory Assembler::assembleCode(string code)
 {
 	//quebra as linhas
-	list<string> lines = stringSplitChar(code,"\n\r");
+	list<string> lines = stringGetLines(code);
 
 	//aloca espaco suficiente para a memoria
 	//int size = pow(2,this->mach.getPCSize());
@@ -221,11 +221,13 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	string mnemonic;
 	string operands;
 	this->parseLine(line,&defLabel,&mnemonic,&operands);
+	ERR("parseLine: '%s' '%s'\n",mnemonic.c_str(),operands.c_str());
 	boost::to_upper(mnemonic);
 	status->firstDefinition = 0;
 	status->label = (char *)defLabel.c_str();
 	status->mnemonic = (char *)mnemonic.c_str();
 	status->operand = (char *)operands.c_str();
+	status->operandFormat = "";
 
 	//define a label
 	if(defLabel!="")
@@ -506,8 +508,6 @@ list<t_operand> Assembler::recalculateOperands(list<t_operand> operands,t_status
 	for(ot=operands.begin() ; ot!=operands.end() ; ot++)
 	{
 		t_operand o = *ot;
-
-		ERR("Op.name: %s\n",o.name.c_str());
 
 		if(o.type == TYPE_LABEL)
 		{

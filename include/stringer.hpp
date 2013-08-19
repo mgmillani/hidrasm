@@ -24,6 +24,13 @@
 #include <string>
 
 using namespace std;
+
+/**
+  * quebra a string em linhas
+  * funciona tanto com \r, \n e \n\r
+  */
+list<string> stringGetLines(string text);
+
 /**
 	*	quebra a string nos divisores passados
 	* nao acrescenta elementos vazios a lista

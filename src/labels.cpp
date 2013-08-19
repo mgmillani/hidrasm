@@ -20,6 +20,8 @@
 #include <map>
 #include <set>
 
+#include <boost/algorithm/string.hpp>
+
 #include "labels.hpp"
 #include "defs.hpp"
 
@@ -31,12 +33,13 @@ using namespace std;
 void Labels::define(string name,unsigned int pos,unsigned int line)
 {
 
+	string str = boost::to_upper_copy(name);
 	if(this->defs.find(name) == this->defs.end())
 	{
-		this->defs[name] = pos;
-		this->lines[name] = line;
+		this->defs[str] = pos;
+		this->lines[str] = line;
 		//marca como nao referenciada
-		this->unrefs.insert(name);
+		this->unrefs.insert(str);
 	}
 	else
 		throw eRedefinedLabel;
@@ -49,7 +52,8 @@ void Labels::define(string name,unsigned int pos,unsigned int line)
 */
 unsigned int Labels::value(string name)
 {
-	map<string,unsigned int>::iterator i = this->defs.find(name);
+	string str = boost::to_upper_copy(name);
+	map<string,unsigned int>::iterator i = this->defs.find(str);
 	if(i == this->defs.end())
 	{
 		//label referenciada mas nao definida
@@ -58,7 +62,7 @@ unsigned int Labels::value(string name)
 	else
 	{
 		//marca a label como referenciada
-		this->unrefs.erase(name);
+		this->unrefs.erase(str);
 		return i->second;
 	}
 }
@@ -70,7 +74,8 @@ unsigned int Labels::value(string name)
 */
 unsigned int Labels::line(string name)
 {
-	map<string,unsigned int>::iterator i = this->lines.find(name);
+	string str = boost::to_upper_copy(name);
+	map<string,unsigned int>::iterator i = this->lines.find(str);
 	if(i == this->defs.end())
 	{
 		//label referenciada mas nao definida
@@ -88,7 +93,8 @@ unsigned int Labels::line(string name)
 bool Labels::exists(string name)
 {
 
-	map<string,unsigned int>::iterator i = this->lines.find(name);
+	string str = boost::to_upper_copy(name);
+	map<string,unsigned int>::iterator i = this->lines.find(str);
 	if(i == this->lines.end())
 		return false;
 	else
