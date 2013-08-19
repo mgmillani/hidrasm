@@ -21,8 +21,6 @@
 
 #include <list>
 
-#include "operands.hpp"
-
 #define LOG210 1.301029995663981195
 #define LOG102 0.30102999566398119801746702250966
 #define LOG2(n) (log10((double)n)/LOG102)
@@ -58,6 +56,8 @@ typedef struct s_status
 	char *label;	//a ultima label lida (referencia ou definicao)
 	char *mnemonic;	//mnemonico da ultima instrucao ou diretiva lida
 }t_status;
+
+#include "operands.hpp"
 
 typedef struct s_pendency
 {

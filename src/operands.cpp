@@ -3,11 +3,55 @@
 #include <list>
 
 #include "operands.hpp"
+#include "labels.hpp"
+#include "numbers.hpp"
 
 #include "debug.hpp"
 #include "defs.hpp"
 
 using namespace std;
+
+/**
+  * resolve a operacao aritmetica presente no operando, escrevendo o valor em o->value
+  * retorna o resultado
+  */
+void Operands::solveOperation(t_operand *op,Labels labels,t_status *status)
+{
+	bool opPotentialLabel = false;
+	Number *operand = NULL;
+	if(status != NULL)
+			status->label = (char *)op->aritOperand.c_str();
+	if(labels.exists(op->aritOperand))
+	{
+		operand = new Number(Number::toBin(labels.value(op->aritOperand)));
+	}
+	else
+	{
+		try
+		{
+			operand = new Number(op->aritOperand);
+		}
+		catch(e_exception e)
+		{
+			opPotentialLabel = true;
+		}
+	}
+
+	if(!opPotentialLabel)
+	{
+		Number result(op->value);
+		result.operate(op->operation[0],*operand);
+		op->value = result.toBin();
+
+		//delete operand;
+	}
+	else
+	{
+		throw(eUndefinedLabel);
+	}
+
+}
+
 
 Operands::Operands(list<t_operand> ops)
 {

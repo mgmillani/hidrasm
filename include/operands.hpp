@@ -1,25 +1,36 @@
 #ifndef OPERANDS_HPP
 #define OPERANDS_HPP
 
+using namespace std;
+
 #include <string>
 
-#include "numbers.hpp"
 #include "types.hpp"
-
-using namespace std;
 
 typedef struct s_operand
 {
 	string name;
+	string operation; //uma operacao aritmetica ou \0
+	string aritOperand; //o operando da operacao aritmetica
 	string addressingCode;	//codigo binario do modo de enderecamento
 	string value;
 	e_type type;
 	bool relative;
 }t_operand;
 
+#include "numbers.hpp"
+#include "labels.hpp"
+#include "defs.hpp"
+
 class Operands
 {
 	public:
+
+	/**
+	  * resolve a operacao aritmetica presente no operando, escrevendo o valor em o->value
+	  * retorna o resultado
+	  */
+	static void solveOperation(t_operand *o,Labels labels,t_status *status);
 
 	Operands(list<t_operand>);
 

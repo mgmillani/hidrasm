@@ -22,6 +22,8 @@
 #include <string>
 #include <list>
 
+#include <boost/algorithm/string.hpp>
+
 #include "registers.hpp"
 #include "stringer.hpp"
 #include "numbers.hpp"
@@ -50,6 +52,7 @@ void Registers::load(string config)
 
 	t_register r;
 	r.name = *(it++);
+	boost::to_upper(r.name);
 	//o indice deve ser em binario
 	r.index = Number::toBin(*(it++));
 
@@ -100,7 +103,8 @@ string Registers::number(string regName)
 	*/
 bool Registers::exists(string regName)
 {
-	if(this->regs.find(regName) == this->regs.end())
+	string str = boost::to_upper_copy(regName);
+	if(this->regs.find(str) == this->regs.end())
 		return false;
 	else
 		return true;

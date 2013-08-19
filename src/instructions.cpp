@@ -180,6 +180,8 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			t_match m = *imatch;
 			t_operand op;
 			op.name = m.element;
+			op.operation = m.operation;
+			op.aritOperand = m.operand;
 			//ERR("Element: %s\n",m.element.c_str());
 
 			//determina o tipo do operando
@@ -223,32 +225,23 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 
 
 			//se houver uma operacao, executa-a
-			bool opPotentialLabel = false;
-			if(m.operation != "" && (!potentialLabel || opOk))
-			{
-				Number *operand = NULL;
-				if(labels.exists(m.operand))
-				{
-					operand = new Number(Number::toBin(labels.value(m.operand)));
-				}
-				else
-				{
-					try
-					{
-						operand = new Number(m.operand);
-					}
-					catch(e_exception e)
-					{
-						opPotentialLabel = true;
-						potentialLabel = true;
-					}
-				}
 
-				if(!opPotentialLabel)
+			if(m.operation != "" && opOk)
+			{
+				try
 				{
-					Number result(op.value);
-					result.operate(m.operation[0],*operand);
-					op.value = result.toBin();
+					Operands::solveOperation(&op,labels,status);
+				}
+				catch(e_exception e)
+				{
+					if(e == eUndefinedLabel)
+					{
+						potentialLabel = true;
+						opOk = false;
+						ERR("Undefined label\n");
+					}
+					else
+						throw(e);
 				}
 			}
 
@@ -279,7 +272,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				}
 
 				//se for uma label ainda nao definida
-				if(!opOk || opPotentialLabel)
+				if(!opOk)
 				{
 					op.type = TYPE_LABEL;
 					hasPendency = true;
@@ -289,6 +282,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				op.addressingCode = a.code;
 				op.relative = a.relative;
 				operands.push_back(op);
+
 			}
 		}//end for match
 		//se todos os operandos estao corretos, essa eh a instrucao certa

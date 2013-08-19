@@ -349,7 +349,11 @@ string Number::toBin(string n)
 
 string Number::toBin(unsigned int n)
 {
-	unsigned int size = LOG2(n)+1;
+	unsigned int size;
+	if(n==0)
+		size = 1;
+	else
+		size = LOG2(n)+1;
 
 	char *result = (char *)malloc(size+2);
 	result[size] = 'b';

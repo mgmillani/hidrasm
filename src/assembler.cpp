@@ -513,6 +513,7 @@ list<t_operand> Assembler::recalculateOperands(list<t_operand> operands,t_status
 		{
 			status->label = (char *)o.name.c_str();
 			o.value = Number::toBin(this->labels.value(o.name));
+			Operands::solveOperation(&o,this->labels,status);
 		}
 		result.push_back(o);
 	}
