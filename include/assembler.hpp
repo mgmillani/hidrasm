@@ -92,7 +92,7 @@ class Assembler
 	private:
 
 	stack<t_pendency> pendecies; //labels pendentes
-	Labels labels; //labinstructionsels definidas
+	Labels labels; //labels definidas
 	Instructions inst;
 	Registers regs;
 	Addressings addr;

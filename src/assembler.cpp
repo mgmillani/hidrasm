@@ -506,6 +506,9 @@ list<t_operand> Assembler::recalculateOperands(list<t_operand> operands,t_status
 	for(ot=operands.begin() ; ot!=operands.end() ; ot++)
 	{
 		t_operand o = *ot;
+
+		ERR("Op.name: %s\n",o.name.c_str());
+
 		if(o.type == TYPE_LABEL)
 		{
 			status->label = (char *)o.name.c_str();

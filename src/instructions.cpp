@@ -221,10 +221,11 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 					potentialLabel = true;
 			}
 
+
 			//se houver uma operacao, executa-a
+			bool opPotentialLabel = false;
 			if(m.operation != "" && (!potentialLabel || opOk))
 			{
-				bool opPotentialLabel = false;
 				Number *operand = NULL;
 				if(labels.exists(m.operand))
 				{
@@ -239,6 +240,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 					catch(e_exception e)
 					{
 						opPotentialLabel = true;
+						potentialLabel = true;
 					}
 				}
 
@@ -277,7 +279,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				}
 
 				//se for uma label ainda nao definida
-				if(!opOk)
+				if(!opOk || opPotentialLabel)
 				{
 					op.type = TYPE_LABEL;
 					hasPendency = true;

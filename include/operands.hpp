@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "numbers.hpp"
 #include "types.hpp"
 
 using namespace std;
@@ -12,7 +13,7 @@ typedef struct s_operand
 	string name;
 	string addressingCode;	//codigo binario do modo de enderecamento
 	string value;
-	e_type type;	//r,l ou n
+	e_type type;
 	bool relative;
 }t_operand;
 
