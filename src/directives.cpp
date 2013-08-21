@@ -40,11 +40,11 @@ using namespace std;
 */
 unsigned int Directives::execute(string directive, string operands, Labels labels, stack<t_pendency> *pendencies, Memory *memory,unsigned int currentByte,struct s_status *status)
 {
-	if(!this->isDirective(directive))
+	if(!Directives::isDirective(directive))
 		throw eUnknownMnemonic;
 	Number n;
 	unsigned int size = 0;
-	list<string> ops = stringSplitCharProtected(operands," ,\t","'\"",'\\');
+	list<string> ops = stringSplitCharProtected(operands," ,\t","['\"","]'\"",'\\');
 	//muda o proximo byte par amontagem
 	if(stringCaselessCompare(directive,"org")==0)
 	{
@@ -79,6 +79,10 @@ unsigned int Directives::execute(string directive, string operands, Labels label
 			memory->writeNumber(Number::toBin(*ot),currentByte,size);
 		else if(Number::isString(*ot))
 			currentByte += memory->writeString(*ot,currentByte,size,-1) - size;
+		else if(Directives::isRepeat(*ot))
+		{
+
+		}
 		//se nao for nada conhecido, adiciona uma pendencia
 		else
 		{
@@ -131,4 +135,33 @@ bool Directives::isDirective(string directive)
 	else if(stringCaselessCompare(directive,"daw")==0)
 		return true;
 	return false;
+}
+
+/**
+  * determina se a string passada corresponde a repeticao de um valor
+  * ou seja, se esta no formato: "[valor]"
+  * se amount e value forem diferentes de NULL, escreve a quantidade de repeticoes e o valor a ser repetido
+  */
+bool Directives::isRepeat(string op, unsigned int *amount, unsigned int *value)
+{
+
+	ERR("OP: '%s'\n",op.c_str());
+
+	//verifica se esta entre []
+	if(op[0] != '[' || op[op.size()-1] != ']')
+		return false;
+
+	//remove espacos em branco antes e depois
+	unsigned int i,e;
+	for(i=1 ; i<op.size() ; i++)
+		if(!ISWHITESPACE(op[i]))
+			break;
+	for(e=op.size()-2 ; e>1 ; e--)
+		if(!ISWHITESPACE(op[e]))
+			break;
+	string num = op.substr(i,i-e+1);
+	if(Number::exists())
+
+	return false;
+
 }

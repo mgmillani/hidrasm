@@ -221,7 +221,7 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	string mnemonic;
 	string operands;
 	this->parseLine(line,&defLabel,&mnemonic,&operands);
-	ERR("parseLine: '%s' '%s'\n",mnemonic.c_str(),operands.c_str());
+	//ERR("parseLine: '%s' '%s'\n",mnemonic.c_str(),operands.c_str());
 	boost::to_upper(mnemonic);
 	status->firstDefinition = 0;
 	status->label = (char *)defLabel.c_str();
@@ -403,10 +403,8 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 	{
 		char c = line[i];
 		if(c == ';')
-		{
-			i--;
 			break;
-		}
+
 		switch(state)
 		{
 			case STATE_INI:
@@ -483,10 +481,10 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 	if(read)
 	{
 
-		if(ISWHITESPACE(line[i]))
+		if(ISWHITESPACE(line[i-1]))
 		{
 			i--;
-			while(ISWHITESPACE(line[i]))
+			while(ISWHITESPACE(line[i-1]))
 				i--;
 			i++;
 		}

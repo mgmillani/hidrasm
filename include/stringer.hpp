@@ -40,10 +40,10 @@ list<string> stringSplitChar(string text, string dividers);
 /**
 	*	quebra a string nos divisores passados
 	* tudo que estiver entre dois protectors sera tratado como um elemento unico
-	* um protector so pode ser fechado por outro igual
+	* um protector so pode ser fechado pelo respectivo closer (mesmo indice)
 	* nao acrescenta elementos vazios a lista
 	*/
-list<string> stringSplitCharProtected(string text, string dividers, string protectors, char escape);
+list<string> stringSplitCharProtected(string text, string dividers, string protectors, string closers, char escape);
 
 /**
 * le todas as palavras de uma string, as quais podem estar separadas por '\t' ou ' '

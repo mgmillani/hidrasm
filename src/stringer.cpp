@@ -146,10 +146,10 @@ list<string> stringSplitChar(string text, string dividers)
 /**
 	*	quebra a string nos divisores passados
 	* tudo que estiver entre dois protectors sera tratado como um elemento unico
-	* um protector so pode ser fechado por outro igual
+	* um protector so pode ser fechado pelo respectivo closer (mesmo indice)
 	* nao acrescenta elementos vazios a lista
 	*/
-list<string> stringSplitCharProtected(string text, string dividers, string protectors, char escape)
+list<string> stringSplitCharProtected(string text, string dividers, string protectors, string closers, char escape)
 {
 	typedef enum {STATE_READ,STATE_SPLIT,STATE_ESCAPE,STATE_PROTECTED} e_state;
 	list<string> sections;
@@ -157,6 +157,7 @@ list<string> stringSplitCharProtected(string text, string dividers, string prote
 	e_state state = STATE_SPLIT;
 	e_state nextState = STATE_SPLIT;
 	unsigned int i=0,b = 0;
+	size_t index;
 	char protectClose = '\0';
 	for(i=0 ; i<text.size() ; i++)
 	{
@@ -187,9 +188,9 @@ list<string> stringSplitCharProtected(string text, string dividers, string prote
 					state = STATE_SPLIT;
 				}
 				//elemento protegido
-				else if(protectors.find(c)!=string::npos)
+				else if((index=protectors.find(c))!=string::npos)
 				{
-					protectClose = c;
+					protectClose = closers[index];
 					state = STATE_PROTECTED;
 				}
 				//escape
@@ -200,10 +201,10 @@ list<string> stringSplitCharProtected(string text, string dividers, string prote
 				break;
 			case STATE_SPLIT:
 				//se for o inicio de um elemento protegido
-				if(protectors.find(c) != string::npos)
+				if((index=protectors.find(c)) != string::npos)
 				{
 					state = STATE_PROTECTED;
-					protectClose = c;
+					protectClose = closers[index];
 					b = i;
 				}
 				else if(c == escape)

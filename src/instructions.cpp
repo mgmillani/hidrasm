@@ -238,7 +238,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 					{
 						potentialLabel = true;
 						opOk = false;
-						ERR("Undefined label\n");
 					}
 					else
 						throw(e);

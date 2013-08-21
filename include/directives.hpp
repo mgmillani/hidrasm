@@ -38,14 +38,20 @@ class Directives
 	public:
 
 	/**
-	* executa a diretiva, retornando em qual byte a montagem deve continuar
-	*/
-	unsigned int execute(string directive,string operands,Labels labels,stack<t_pendency> *pendencies,Memory *memory,unsigned int currentByte,struct s_status *status);
+	  * executa a diretiva, retornando em qual byte a montagem deve continuar
+	  */
+	static unsigned int execute(string directive,string operands,Labels labels,stack<t_pendency> *pendencies,Memory *memory,unsigned int currentByte,struct s_status *status);
 
 	/**
-	* verifica se a string passada corresponde a uma diretiva
-	*/
-	bool isDirective(string name);
+	  * verifica se a string passada corresponde a uma diretiva
+	  */
+	static bool isDirective(string name);
+
+	/**
+	  * determina se a string passada corresponde a repeticao de um valor
+	  * se amount e value forem diferentes de NULL, escreve a quantidade de repeticoes e o valor a ser repetido
+	  */
+	static bool isRepeat(string op, unsigned int *amount=NULL, unsigned int *value=NULL);
 
 	private:
 
