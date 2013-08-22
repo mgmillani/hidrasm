@@ -72,6 +72,7 @@ unsigned int Directives::execute(string directive, string operands, Labels label
 
 	for(ot=ops.begin() ; ot!=ops.end() ; ot++)
 	{
+		unsigned int value,repeat;
 		//se existir uma label com esse nome, usa seu valor
 		if(labels.exists(*ot))
 			memory->writeNumber(Number::toBin(labels.value(*ot)),currentByte,size);
@@ -79,9 +80,21 @@ unsigned int Directives::execute(string directive, string operands, Labels label
 			memory->writeNumber(Number::toBin(*ot),currentByte,size);
 		else if(Number::isString(*ot))
 			currentByte += memory->writeString(*ot,currentByte,size,-1) - size;
-		else if(Directives::isRepeat(*ot))
+		else if(Directives::isRepeat(*ot,&repeat,&value))
 		{
+			//cria o array com os valores certos
+			unsigned char array[size];
 
+			unsigned int i;
+			unsigned int v = value;
+			for(i=0 ; i<size ; i++)
+			{
+				//copia o byte menos significativo do valor
+				array[i] = v&255;
+				v >>= 8;
+			}
+			memory->writeArrayRepeat(array,size,currentByte,repeat);
+			currentByte += (repeat-1)*size;
 		}
 		//se nao for nada conhecido, adiciona uma pendencia
 		else
@@ -145,8 +158,6 @@ bool Directives::isDirective(string directive)
 bool Directives::isRepeat(string op, unsigned int *amount, unsigned int *value)
 {
 
-	ERR("OP: '%s'\n",op.c_str());
-
 	//verifica se esta entre []
 	if(op[0] != '[' || op[op.size()-1] != ']')
 		return false;
@@ -160,7 +171,14 @@ bool Directives::isRepeat(string op, unsigned int *amount, unsigned int *value)
 		if(!ISWHITESPACE(op[e]))
 			break;
 	string num = op.substr(i,i-e+1);
-	if(Number::exists())
+	if(Number::exists(num))
+	{
+		if(amount != NULL)
+			*amount = Number::toInt(num);
+		if(value != NULL)
+			*value = 0;
+		return true;
+	}
 
 	return false;
 

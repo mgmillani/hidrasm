@@ -46,6 +46,12 @@ class Memory
 	void writeArray(unsigned char *array, unsigned int arraySize, unsigned int startPos);
 
 	/**
+	  * repete o valor passado diversas vezes
+	  * usa a endianess adequada para escrever cada repeticao
+	  */
+	void writeArrayRepeat(unsigned char *array, unsigned int arraySize, unsigned int pos, unsigned int repeat);
+
+	/**
 	  * escreve uma string a partir da posicao especificada. Cada caractere tera width bytes
 	  * escreve os caracteres em ordem, mas cada um respeitando a endianess
 	  * retorna o numero de bytes escritos, sendo que sera escrito no maximo max bytes

@@ -60,6 +60,34 @@ void Memory::writeArray(unsigned char *array, unsigned int arraySize, unsigned i
 }
 
 /**
+  * repete o valor passado diversas vezes
+  * usa a endianess adequada para escrever cada repeticao
+  */
+void Memory::writeArrayRepeat(unsigned char *array, unsigned int arraySize, unsigned int pos, unsigned int repeat)
+{
+
+	unsigned int begin=0,end=arraySize-1;
+	int step = 1;
+	if(this->bigEndian)
+	{
+		begin = end;
+		end = 0;
+		step = -1;
+	}
+
+	unsigned int i;
+	for(i=0 ; i<repeat ; i++)
+	{
+		unsigned int j,p;
+		for(j=0,p=begin ; j<arraySize ; j++,p+=step)
+		{
+			this->area[pos++] = array[p];
+		}
+	}
+
+}
+
+/**
 	* escreve uma string a partir da posicao especificada. Cada caractere tera width bytes
 	* escreve os caracteres em ordem, mas cada um respeitando a endianess
 	* retorna o numero de bytes escritos, sendo que sera escrito no maximo max bytes
