@@ -25,6 +25,12 @@
 
 using namespace std;
 
+typedef struct s_label
+{
+	string name;
+	unsigned int pos,line;
+}t_label;
+
 class Labels
 {
 
@@ -51,6 +57,11 @@ class Labels
 	  * verifica se existe uma label definida com o nome dado
 	  */
 	bool exists(string name);
+
+	/**
+	  * retorna uma lista com todas as labels e seus valores
+	  */
+	list<t_label> copy();
 
 	private:
 

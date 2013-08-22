@@ -126,6 +126,10 @@ int main(int argc,char *argv[])
 				assembler.createBinaryV3(output,&mem);
 			else if(version == 0)
 				assembler.createBinaryV0(output,&mem);
+
+			//gera a tabela de simbolos
+			if(symbols != NULL)
+				assembler.createSymTable(symbols);
 		}
 
 		free(codeP);

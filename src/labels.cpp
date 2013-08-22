@@ -101,3 +101,37 @@ bool Labels::exists(string name)
 		return true;
 
 }
+
+
+/**
+  * a < b sse a.pos < b.pos
+  */
+bool labelSortPos(t_label a, t_label b)
+{
+	return a.pos < b.pos;
+}
+
+/**
+  * retorna uma lista com todas as labels e seus valores
+  */
+list<t_label> Labels::copy()
+{
+
+	list<t_label> lst;
+
+	map<string, unsigned int>::iterator it;
+	for(it=this->defs.begin() ; it!=this->defs.end() ; it++)
+	{
+		t_label la;
+		la.name = it->first;
+		la.pos = it->second;
+
+		la.line = this->lines.find(la.name)->second;
+		lst.push_back(la);
+	}
+
+	lst.sort(labelSortPos);
+
+	return lst;
+
+}

@@ -70,6 +70,11 @@ class Assembler
 	void createBinaryV0(FILE *fl,Memory *memory);
 
 	/**
+	  * escreve todos os simbolos declarados no codigo montado
+	  */
+	void createSymTable(FILE *fl);
+
+	/**
 	  * cria o arquivo binario no formato do Daedalus
 	  * o formato eh o seguinte:
 	  * primeiro byte: 3

@@ -387,6 +387,31 @@ void Assembler::createBinaryV3(FILE *fl,Memory *memory)
 }
 
 /**
+  * escreve todos os simbolos declarados no codigo montado
+  */
+void Assembler::createSymTable(FILE *fl)
+{
+	//determina a largura da maior label (em caracteres)
+	list<t_label> lst;
+	list<t_label>::iterator it;
+	unsigned int largest = 0;
+	for(it=lst.begin() ; it!=lst.end() ; it++)
+	{
+		if(it->name.size() > largest)
+			largest = it->name.size();
+	}
+
+	unsigned int margin = 8;
+
+	for(it=lst.begin() ; it!=lst.end() ; it++)
+	{
+		fprintf(fl,"%s",it->name.c_str());
+		fprintf(fl,"\t%u\n",it->pos);
+	}
+
+}
+
+/**
 * faz o parsing de uma linha, escrevendo a label definida em defLabel,
 * o mnemonico da linha em mnemonic e os operandos em operands
 */

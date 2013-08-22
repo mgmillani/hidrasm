@@ -167,10 +167,10 @@ bool Directives::isRepeat(string op, unsigned int *amount, unsigned int *value)
 	for(i=1 ; i<op.size() ; i++)
 		if(!ISWHITESPACE(op[i]))
 			break;
-	for(e=op.size()-2 ; e>1 ; e--)
+	for(e=op.size()-2 ; e>0 ; e--)
 		if(!ISWHITESPACE(op[e]))
 			break;
-	string num = op.substr(i,i-e+1);
+	string num = op.substr(i,e-i+1);
 	if(Number::exists(num))
 	{
 		if(amount != NULL)
