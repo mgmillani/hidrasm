@@ -125,10 +125,10 @@ void Expression::init(string expression)
 		else if(isReserved(c) && !escape)
 		{
 			//expressao regular que agrupa qualquer caractere alfanumerico ou _
-			string element = "((?:[[:alnum:]]|_)+|(?:\".\")+|(?:'.')+)";
+			string element = "((?:[[:alnum:]]|_)+|(?:\".*\")+|(?:'.*')+)";
 			//expressao para agrupar a aplicacao de um operador aritmetico
-			string operation = "((?:[[:blank:]]*(?:\\+|\\*|-|/|\\^)))?";
-			regexp += element + operation + element+"?";
+			string operation = "(?:[[:blank:]]*(?:\\+|\\*|-|/|\\^))";
+			regexp += element + "(" + operation + element+ ")?";
 			//guarda o tipo da variavel
 			this->vars[amount++] = c;
 		}

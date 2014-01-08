@@ -33,6 +33,8 @@ class Number
 	  * inicializa o numero a partir de uma string binaria, decimal ou hexadecimal
 	  */
 	Number(string n);
+	Number(unsigned int n);
+	Number(int n);
 
 	~Number();
 
@@ -40,7 +42,7 @@ class Number
 	  * aplica a operacao dada usando n como o segundo operando
 	  * escreve o resultado neste objeto
 	  */
-	void operate(char operation,Number n);
+	void operate(char operation,Number &n);
 
 	/**
 	  *	converte o numero para um inteiro
@@ -121,7 +123,7 @@ class Number
 	static bool isString(string element);
 
 	unsigned int numDigits;
-	unsigned char *digits; //os digitos do numero, em base 256, em notacao little-endian
+	unsigned char *digits; //os digitos do numero, em complemento de 256, notacao little-endian
 
 };
 

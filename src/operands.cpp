@@ -13,7 +13,6 @@ using namespace std;
 
 /**
   * resolve a operacao aritmetica presente no operando, escrevendo o valor em o->value
-  * retorna o resultado
   */
 void Operands::solveOperation(t_operand *op,Labels labels,t_status *status)
 {
@@ -50,6 +49,7 @@ void Operands::solveOperation(t_operand *op,Labels labels,t_status *status)
 	}
 	else
 	{
+		op->aritOperandType = TYPE_LABEL;
 		throw(eUndefinedLabel);
 	}
 

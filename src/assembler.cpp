@@ -157,7 +157,7 @@ Memory Assembler::assembleCode(string code)
 
 	//aloca espaco suficiente para a memoria
 	//int size = pow(2,this->mach.getPCSize());
-	int size = 2<<this->mach.getPCSize();
+	int size = 2<<(this->mach.getPCSize()-1);
 	Memory memory(size,this->mach.bigEndian);
 
 	unsigned int pos = 0;
@@ -177,14 +177,15 @@ Memory Assembler::assembleCode(string code)
 		t_pendency pend = this->pendecies.top();
 		this->pendecies.pop();
 
+		//recalcula os valores dos operandos
 		try
 		{
-			list<t_operand> operands = this->recalculateOperands(pend.operands,pend.status);
+			list<t_operand> operands = this->recalculateOperands(pend.operands,pend.status,pend.byte);
 			string binFormat = pend.binFormat;
 			unsigned int size = pend.size;
 			unsigned int pos = pend.byte;
 
-			string result = replaceOperands(binFormat, operands, size);
+			string result = replaceOperands(binFormat, operands, size,pend.byte);
 			memory.writeNumber(result,pos,-1);
 		}
 		catch(e_exception e)
@@ -202,12 +203,12 @@ Memory Assembler::assembleCode(string code)
 
 
 /**
-*	monta uma linha, escrevendo seu codigo binario a partir de memory[byte]
-* line eh a linha a ser montada
-* se houver alguma label que ainda nao foi definida, reserva espaco e adiciona a pendencia na pilha
-* se for encontrada a definicao de uma label, acrescenta-a as Labels conhecidas
-* retorna a posicao da memoria em que a proxima linha deve comecar
-*/
+  *	monta uma linha, escrevendo seu codigo binario a partir de memory[byte]
+  * line eh a linha a ser montada
+  * se houver alguma label que ainda nao foi definida, reserva espaco e adiciona a pendencia na pilha
+  * se for encontrada a definicao de uma label, acrescenta-a as Labels conhecidas
+  * retorna a posicao da memoria em que a proxima linha deve comecar
+  */
 unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int byte,unsigned int lineNumber,t_status *status)
 {
 	status->value = 0;
@@ -299,7 +300,7 @@ void Assembler::createBinaryV0(string filename,Memory *memory)
 void Assembler::createBinaryV0(FILE *fl,Memory *memory)
 {
 	string machineName = this->mach.name;
-	//escreve a vers√£o
+	//escreve a vers„o
 	char version = 0;
 	fwrite(&version,1,1,fl);
 	//nome da maquina
@@ -524,7 +525,7 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 /**
   * recalcula o valor das labels, retornando uma nova lista de operandos
   */
-list<t_operand> Assembler::recalculateOperands(list<t_operand> operands,t_status *status)
+list<t_operand> Assembler::recalculateOperands(list<t_operand> operands,t_status *status,unsigned int pos)
 {
 	list<t_operand>::iterator ot;
 	list<t_operand> result;
@@ -536,6 +537,11 @@ list<t_operand> Assembler::recalculateOperands(list<t_operand> operands,t_status
 		{
 			status->label = (char *)o.name.c_str();
 			o.value = Number::toBin(this->labels.value(o.name));
+			Operands::solveOperation(&o,this->labels,status);
+		}
+		else if(o.aritOperandType == TYPE_LABEL)
+		{
+			status->label = (char *)o.aritOperand.c_str();
 			Operands::solveOperation(&o,this->labels,status);
 		}
 		result.push_back(o);

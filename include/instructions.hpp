@@ -91,13 +91,14 @@ class Instructions
   * substitui os operandos, escrevendo seu valor binario na string
   * em format:
   * r[n] indica o n-esimo registrador. Se n for omitido, segue a ordem em que aparecem
-  * e[n](m) indica o n-esimo endereco. Se n for omitido, segue a ordem em que aparecem. m indica o tamanho, em bits
+  * a[n](m) indica o n-esimo endereco. Se n for omitido, segue a ordem em que aparecem. m indica o tamanho, em bits
   * m[n] indica o n-esimo modo de enderecamento. Se n for omitido, segue a ordem em que aparecem
   * 1 e 0 indicam os proprios algarismos
   * qualquer outro caractere sera ignorado
   * size indica quantos bits o resultado deve ter
+  * pos determina a posicao atual do Program Counter
   * a string retornanda contera somente 0s e 1s e sera terminada por um 'b'
   */
-string replaceOperands(string format,list<t_operand> operands,unsigned int size);
+string replaceOperands(string format,list<t_operand> operands,unsigned int size, unsigned int pos);
 
 #endif // INSTRUCTIONS_HPP

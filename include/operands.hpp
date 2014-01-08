@@ -15,6 +15,7 @@ typedef struct s_operand
 	string addressingCode;	//codigo binario do modo de enderecamento
 	string value;
 	e_type type;
+	e_type aritOperandType; //tipo do operando da operacao aritmetica, se houver
 	bool relative;
 }t_operand;
 

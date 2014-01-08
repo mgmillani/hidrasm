@@ -17,6 +17,7 @@
 */
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -32,6 +33,30 @@ Number::Number()
 {
 	this->numDigits = 0;
 	this->digits = NULL;
+}
+
+Number::Number(int n)
+{
+	this->numDigits = sizeof(n);
+	this->digits = (unsigned char *)malloc(this->numDigits);
+	unsigned int i=0;
+	while(i < this->numDigits)
+	{
+		this->digits[i++] = n&255;
+		n>>=8;
+	}
+}
+
+Number::Number(unsigned int n)
+{
+	this->numDigits = sizeof(n) + 1;
+	this->digits = (unsigned char *)malloc(this->numDigits);
+	unsigned int i=0;
+	while(i < this->numDigits-1)
+	{
+		this->digits[i++] = n&255;
+		n>>=8;
+	}
 }
 
 /**
@@ -76,7 +101,7 @@ Number::~Number()
   * aplica a operacao dada usando n como o segundo operando
   * escreve o resultado neste objeto
   */
-void Number::operate(char operation,Number n)
+void Number::operate(char operation,Number &n)
 {
 
 	switch(operation)

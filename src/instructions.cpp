@@ -130,6 +130,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 		}
 
 		//cria uma lista com todas as expressoes dos modos de enderecamento
+		// TODO: isso nao precisa ser feito por instrucao montada, pode ser feito antes
 		list<Expression> expr;
 		list<t_addressing> addrs;
 		//se o modo de enderecamento for *, pega todos os modos de enderecamento existentes
@@ -182,12 +183,11 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			op.name = m.element;
 			op.operation = m.operation;
 			op.aritOperand = m.operand;
-			//ERR("Element: %s\n",m.element.c_str());
+			op.aritOperandType = TYPE_NONE;
 
 			//determina o tipo do operando
 			if(m.subtype[TYPE_REGISTER] || m.subtype[TYPE_ANYTHING])
 			{
-				//ERR("Reg\n");
 				if(registers.exists(m.element))
 				{
 					op.type = TYPE_REGISTER;
@@ -212,7 +212,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			}
 			if(m.subtype[TYPE_LABEL] || m.subtype[TYPE_ANYTHING] || m.subtype[TYPE_ADDRESS])
 			{
-				//ERR("Label\n");
+
 				if(labels.exists(m.element))
 				{
 					op.type = TYPE_LABEL;
@@ -273,7 +273,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				//se for uma label ainda nao definida
 				if(!opOk)
 				{
-					op.type = TYPE_LABEL;
+					//op.type = TYPE_LABEL;
 					hasPendency = true;
 				}
 
@@ -323,7 +323,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	else
 	{
 		//i contem a ultima instrucao avaliada
-		string code = replaceOperands(i.binFormat,operands,i.size);
+		string code = replaceOperands(i.binFormat,operands,i.size,pos + i.size/8);
 
 		return mem->writeNumber(code,pos,-1);
 	}
@@ -340,9 +340,10 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
   * 1 e 0 indicam os proprios algarismos
   * qualquer outro caractere sera ignorado
   * size indica quantos bits o resultado deve ter
+  * pos determina a posicao atual do Program Counter
   * a string retornanda contera somente 0s e 1s e sera terminada por um 'b'
   */
-string replaceOperands(string format,list<t_operand> operands,unsigned int size)
+string replaceOperands(string format,list<t_operand> operands,unsigned int size, unsigned int pos)
 {
 
 	typedef enum {STATE_COPY,STATE_NUM,STATE_REGISTER,STATE_MODE,STATE_ADDRESS,STATE_I_OPERAND,STATE_W_OPERAND} e_state;
@@ -359,7 +360,7 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size)
 	int value = 0;
 
 	string result(size+1,'0');
-	list<string> addresses;
+	list<pair<string,bool> > addresses;
 	result[size] = 'b';
 
 	t_operand op;
@@ -461,7 +462,7 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size)
 					op = operand.getNextOperand(TYPE_ADDRESS);
 					number = op.value;
 					//adiciona a lista de enderecos
-					addresses.push_back(number);
+					addresses.push_back(make_pair(number, true));
 					//escreve o simbolo do endereco
 					result[w++] = ADDRESS;
 
@@ -500,7 +501,7 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size)
 					if(type==TYPE_ADDRESS)
 					{
 						result[w++] = ADDRESS;
-						addresses.push_back(op.value);
+						addresses.push_back(make_pair(op.value, true));
 					}
 					//caso contrario, escreve o valor
 					else
@@ -561,24 +562,43 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size)
 	//substitui todas as ocorrencias de um ADDRESS pelo respectivo valor
 	if(addresses.size()>0)
 	{
-
 		defSize = 1+ (size-w)/addresses.size();
 		r=w=0;
-		list<string>::iterator ad;
-		for(ad=addresses.begin() ; ad!=addresses.end() ; ad++)
+		list<pair<string,bool> >::iterator adi;
+		for(adi=addresses.begin() ; adi!=addresses.end() ; adi++)
 		{
+			string ad = adi->first;
+			bool relative = adi->second;
 			//busca o proximo ADDRESS
 			while(result[r]!=ADDRESS)
 			{
 				r++;
 			}
-			number = Number::toBin(*ad);
+
+			// se for relativo ao PC, subtrai o valor deste
+			if(relative)
+			{
+				Number a(ad);
+				Number b(pos);
+				a.operate('-',b);
+				number = a.toBin();
+			}
+			else
+				number = Number::toBin(ad);
+
 			//escreve o valor binario, ajustando para o tamanho adequado
 			w = r;
-			unsigned int i;
-			for(i=0 ; i < defSize - (number.size()-1) ; i++)
-				result[w++] = '0';
-			unsigned int k=0;
+			unsigned int k,i=0;
+			//caso seja necessario adicionar zeros a esquerda:
+			if(number.size()-1 < defSize)
+			{
+				for(i=0 ; i < (defSize - (number.size()-1)) ; i++)
+					result[w++] = '0';
+				k=0;
+			}
+			else
+				k = number.size() - 1 - defSize;
+
 			while(i<defSize)
 			{
 				result[w++] = number[k++];
