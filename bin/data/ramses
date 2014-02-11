@@ -1,6 +1,6 @@
 [registers]
 	A 0b
-	B 1b
+	B 01b
 	X 10b
 [machine]
 	big-endian 8 ramses
@@ -18,11 +18,12 @@
 	16 OR  ra * - 0100.rm[1]a
 	16 AND ra * - 0101.rm[1]a
 	08 NOT r direto - 0110.r00
-	16 JMP a  * - 1000.11ma
-	16 JN  a  * - 1001.11ma
-	16 JZ  a  * - 1010.11ma
-	16 JC  a  * - 1011.11ma
-	16 JSR a  * - 1100.11ma
-	16 NEG a  * - 1101.11ma
-	16 SHR a  * - 1110.11ma
-	08 HLT -  - - 1111.1100
+	16 SUB ra * - 0111.rm[1]a
+	16 JMP a  * - 1000.00ma
+	16 JN  a  * - 1001.00ma
+	16 JZ  a  * - 1010.00ma
+	16 JC  a  * - 1011.00ma
+	16 JSR a  * - 1100.00ma
+	08 NEG r  * - 1101.rm00
+	08 SHR r  * - 1110.rm00
+	08 HLT -  - - 1111.0000

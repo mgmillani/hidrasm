@@ -35,8 +35,6 @@ using namespace std;
 void Labels::define(string name,unsigned int pos,unsigned int line)
 {
 
-	//TRACE("Defined %s at %u (line %u)\n",name.c_str(),pos,line);
-
 	string str = boost::to_upper_copy(name);
 	if(this->defs.find(name) == this->defs.end())
 	{

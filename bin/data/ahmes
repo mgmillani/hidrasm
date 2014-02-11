@@ -1,5 +1,5 @@
 [machine]
-	little-endian 8 ahmes
+	big-endian 8 ahmes
 [addressings]
 	direto = 0 o
 [instructions]
@@ -25,5 +25,5 @@
 	08 SHR -    -   - 1110.0000
 	08 SHL -    -   - 1110.0001
 	08 ROR -    -   - 1110.0010
-	08 ROR -    -   - 1110.0011
+	08 ROL -    -   - 1110.0011
 	08 HLT -    -   - 1111.0000

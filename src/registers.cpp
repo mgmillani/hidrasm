@@ -91,7 +91,8 @@ void Registers::adjustRegistersIndexes()
 */
 string Registers::number(string regName)
 {
-	map<string,t_register>::iterator it = this->regs.find(regName);
+	string str = boost::to_upper_copy(regName);
+	map<string,t_register>::iterator it = this->regs.find(str);
 	if(it == this->regs.end())
 		return string();
 	else
