@@ -170,7 +170,20 @@ e_numType Number::numberType(string n)
 	if(n.size()==0)
 		return INVALID;
 	unsigned int end = n.size()-1;
-	char d = n[end];
+	unsigned int begin = 0;
+	char d;
+	//if it starts with h/H, it is a prefixed hexadecimal number
+	bool prefixed = false;
+	if(n[0] == 'h' || n[0] == 'H')
+	{
+		d = 'h';
+		prefixed = true;
+		begin++;
+		end++;  // this will be subtracted later
+	}
+	else
+		d = n[end];
+
 	switch(d)
 	{
 		default:
@@ -179,12 +192,12 @@ e_numType Number::numberType(string n)
 		case 'D':
 			end--;
 			int i;
-			for(i=end; i >0 ; i--)
+			for(i=end; i >begin ; i--)
 			{
 				if(n[i]<'0' || n[i]>'9')
 					return INVALID;
 			}
-			if(n[0]=='-' || (n[0]>='0' && n[0]<='9'))
+			if(n[begin]=='-' || (n[begin]>='0' && n[begin]<='9'))
 				return DECIMAL;
 			else
 				return INVALID;
@@ -192,12 +205,12 @@ e_numType Number::numberType(string n)
 		case 'b':
 		case 'B':
 			end--;
-			for(i=end; i >0 ; i--)
+			for(i=end; i >begin ; i--)
 			{
 				if(n[i]<'0' || n[i]>'1')
 					return INVALID;
 			}
-			if(n[0]=='-' || (n[0]>='0' && n[0]<='1'))
+			if(n[begin]=='-' || (n[begin]>='0' && n[begin]<='1'))
 				return BINARY;
 			else
 				return INVALID;
@@ -205,7 +218,7 @@ e_numType Number::numberType(string n)
 		case 'h':
 		case 'H':
 			end--;
-			for(i=end; i >0 ; i--)
+			for(i=end; i >begin ; i--)
 			{
 				if(n[i]>='0' && n[i]<='9')
 					continue;
@@ -216,8 +229,15 @@ e_numType Number::numberType(string n)
 				else
 					return INVALID;
 			}
-			if(n[0]=='-' || (n[0]>='0' && n[0]<='9') || (n[i]>='A' && n[i]<='F') || (n[i]>='a' && n[i]<='f'))
-				return HEXADECIMAL;
+			//if(n[begin]=='-' || (n[begin]>='0' && n[begin]<='9') || (n[i]>='A' && n[i]<='F') || (n[i]>='a' && n[i]<='f'))
+			if(prefixed)
+			{
+				if((n[begin]>='0' && n[begin]<='9') || (n[i]>='A' && n[i]<='F') || (n[i]>='a' && n[i]<='f'))
+					return PRE_HEXADECIMAL;
+			}
+			// if it is not prefixed with the H, than it must start with a number
+			else if(n[begin]=='-' || (n[begin]>='0' && n[begin]<='9') )
+					return HEXADECIMAL;
 			else
 				return INVALID;
 			break;
@@ -234,12 +254,12 @@ void Number::convertDigits(string n, unsigned char *values,e_numType type)
 {
 	int min = 0;
 	int i;
-	int max = n.size();
+	int max = n.size()-1;
 	switch(type)
 	{
 		case DECIMAL:
-			if(n[max-1] == 'd' || n[max-1] == 'D')
-				max--;
+			if(n[max] != 'd' || n[max] != 'D')
+				max++;
 			if(n[0] == '-')
 				min=1;
 
@@ -254,6 +274,9 @@ void Number::convertDigits(string n, unsigned char *values,e_numType type)
 			for(i=min ; i<max ; i++)
 				values[i] = n[i]-'0';
 			break;
+		case PRE_HEXADECIMAL:
+			min = 1;
+			max++;
 		case HEXADECIMAL:
 			if(n[0] == '-')
 				min=1;
@@ -274,22 +297,24 @@ void Number::convertDigits(string n, unsigned char *values,e_numType type)
 }
 
 /**
-  *	converte o numero para um inteiro
-  * caso seja maior que um, trunca-o, retornando somente os bits menos significativos
-  * o ultimo caractere determina o tipo do numero:
-  * b/B - binario
+  *	converts a number to an int
+  *	if it is too big, it will be truncated, returning only the least-significative bits
+  * the type is given by the last character
+  * b/B - binary
   * d/D - decimal
   * h/H - hexadecimal
-  * nada/algarismo - decimal
-  * se for encontrado um numero desconhecido, retorna 0 (REVER ISSO)
+  * nothing/algarism - decimal
+  * TODO: If compatibilty-mode is active, if the first character is h/H, the number is regarded as hexadecimal
   */
 int Number::toInt(string n)
 {
+	//TRACE("start");
 	int base = 2;
 	int power = 1;
 	int end = n.size()-1;
 	e_numType type = numberType(n);
 	char last = n[end];
+	int begin = 0;
 	switch(type)
 	{
 		case DECIMAL:
@@ -300,13 +325,16 @@ int Number::toInt(string n)
 		case BINARY:
 			base = 2;
 			break;
+		case PRE_HEXADECIMAL:
+			begin = 1;
+			end++;
 		case HEXADECIMAL:
 			base = 16;
 			break;
 		case INVALID:
 			throw (eInvalidFormat);
 	}
-	int begin = 0;
+
 	bool negative = false;
 	if(n[0] == '-')
 	{
@@ -331,6 +359,7 @@ int Number::toInt(string n)
 	if(negative)
 		val = -val;
 
+	//TRACE("finish");
 	return val;
 }
 
@@ -349,6 +378,7 @@ string Number::toBin(string n)
 				return val;
 			}
 			break;
+		case PRE_HEXADECIMAL:
 		case HEXADECIMAL:
 			{
 				string number = getMinDigits(n);
@@ -510,9 +540,13 @@ string Number::getMinDigits(string n)
 	}
 	string result;
 	char last = toupper(n[n.size()-1]);
+	char first = toupper(n[0]);
 	//se o ultimo caractere indicar a base
 	if(last == 'D' || last == 'B' || last == 'H')
 		result = n.substr(i,n.size()-i-1);
+	// if the first character indicates the base
+	else if(first == 'H')
+		result = n.substr(i+1,n.size()-i-1);
 	else
 		result = n.substr(i,n.size()-i);
 
@@ -590,6 +624,7 @@ unsigned char *Number::toByteArray(string n, unsigned int *size)
 			}
 
 			break;
+		case PRE_HEXADECIMAL:
 		case HEXADECIMAL:
 			//numero de bytes = digitos/2
 			max = ceil(len/2.0);

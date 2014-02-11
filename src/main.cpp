@@ -1,5 +1,5 @@
 /**
-* Copyright 2013 Marcelo Millani
+* Copyright 2013, 2014 Marcelo Millani
 *	This file is part of hidrasm.
 *
 * hidrasm is free software: you can redistribute it and/or modify
@@ -30,6 +30,7 @@ using namespace std;
 int main(int argc,char *argv[])
 {
 	bool help = false;
+	int exitValue = 0;
 
 	FILE *source = stdin;
 	FILE *output = stdout;
@@ -93,7 +94,7 @@ int main(int argc,char *argv[])
 		}
 	}
 
-	//mostra mensagem de ajuda
+	//shows help message
 	if(help)
 	{
 		ERR("\n\nusage: hidrassembler [OPTIONS...] machine=<machine> messages=<messages>\n");
@@ -108,10 +109,13 @@ int main(int argc,char *argv[])
 		ERR("symbols=<filename>\t defined symbols will be written to <filename>\n");
 		ERR("version=<number>\t creates a binary file for the <number> version. 3 is for Daedalus. Hidra uses version 0 (default:0)\n");
 	}
+	// assembles the source code
 	else if(machine != NULL && messages != NULL)
 	{
 		Messenger messenger(messages,warnings,errors);
 		Assembler assembler(machine,messenger);
+
+		// assembler.print(stderr);
 
 		int size;
 		char *codeP = fileRead(source,&size,1);
@@ -127,10 +131,12 @@ int main(int argc,char *argv[])
 			else if(version == 0)
 				assembler.createBinaryV0(output,&mem);
 
-			//gera a tabela de simbolos
+			//creates symbol table
 			if(symbols != NULL)
 				assembler.createSymTable(symbols);
 		}
+		else
+			exitValue = -1;
 
 		free(codeP);
 	}
@@ -140,6 +146,8 @@ int main(int argc,char *argv[])
 			ERR("Error: the machine was not specified\n");
 		if(messages == NULL)
 			ERR("Error: message file was not specified\n");
+
+		return -1;
 	}
 
 	if(source != NULL)
@@ -157,6 +165,6 @@ int main(int argc,char *argv[])
 	if(messages != NULL)
 		fclose(messages);
 
-	return 0;
+	return exitValue;
 
 }

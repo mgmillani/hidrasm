@@ -136,8 +136,9 @@ void Expression::init(string expression)
 		{
 			regexp += c;
 		}
-		//qualquer sequencia (0 ou mais) de brancos
-		regexp += "(?:[[:blank:]]*)";
+		// any amount of spaces
+		// TODO: allow commas only if in compatibility mode
+		regexp += "(?:[[:blank:]]|,*)";
 		escape = false;
 	}
 

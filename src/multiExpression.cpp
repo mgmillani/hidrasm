@@ -7,7 +7,8 @@
 #include "multiExpression.hpp"
 
 #include "defs.hpp"
-
+#define TRACE_OFF
+#define ERR_OFF
 #include "debug.hpp"
 
 	/**
@@ -110,7 +111,7 @@
 			throw(eUnmatchedExpression);
 		}
 
-		unsigned int i;
+		unsigned int i,t;
 		list<t_match> vars;
 
 		/*
@@ -121,8 +122,10 @@
 		}
 		*/
 
-		for(i=2 ; i<what.size() ; i+=this->numSub*3+1)
+		for(t=0,i=2 ; i<what.size() ; t++,i+=this->numSub*3+1)
 		{
+			// type of the element on the top expression
+			e_type type = varToNum(this->vars[t]);
 			t_match m;
 			for(int j=0 ; j<TYPE_TOTAL ; j++)
 				m.subtype[j] = 0;
@@ -136,7 +139,14 @@
 					m.operation = what[i+k+1];
 					m.operand = what[i+k+2];
 
-					m.subtype[varToNum(this->subvars[j])] = 1;
+					e_type subtype = varToNum(this->subvars[j]);
+					ERR("Subtype0: %d\n",subtype);
+					subtype = mostStrictType(type,subtype);
+					ERR("Pos: %d\n",t);
+					ERR("Type: %d\n",type);
+					ERR("Subtype1: %d\n",subtype);
+					if(subtype != TYPE_NONE)
+						m.subtype[subtype] = 1;
 					m.indexes.push_back(j);
 				}
 			}

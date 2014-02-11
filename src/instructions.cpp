@@ -36,6 +36,8 @@
 #include "types.hpp"
 
 #include "defs.hpp"
+//#define TRACE_OFF
+//#define ERR_OFF
 #include "debug.hpp"
 
 using namespace std;
@@ -63,9 +65,10 @@ void Instructions::load(string config)
 
 	if(it==words.end()) throw (eInvalidFormat);
 	if(Expression::getExpressionType(*(it)) != TYPE_NONE)
-		inst.operandExpression = *(it++);
+		inst.operandExpression = *it;
 	else
 		inst.operandExpression = "";
+	it++;
 
 	if(it==words.end()) throw (eInvalidFormat);
 	inst.addressingNames = stringSplitChar(*(it++),",");
@@ -97,7 +100,6 @@ bool Instructions::isInstruction(string mnemonic)
   */
 unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *mem,unsigned int pos,stack<t_pendency> *pendencies,Addressings addressings,Labels labels, Registers registers,t_status *status)
 {
-
 	//busca todas as instrucoes com o dado mnemonico
 	boost::to_upper(mnemonic);
 	map<string,list<t_instruction> >::iterator it = this->insts.find(mnemonic);
@@ -116,7 +118,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	list<t_operand> operands;
 	bool hasPendency = false;
 	bool wrongOperands = false;
-
 	for(jt=matches.begin() ; jt!=matches.end() && !inOk; jt++)
 	{
 		i = *jt;
@@ -184,6 +185,7 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			op.operation = m.operation;
 			op.aritOperand = m.operand;
 			op.aritOperandType = TYPE_NONE;
+			op.type = TYPE_LABEL;
 
 			//determina o tipo do operando
 			if(m.subtype[TYPE_REGISTER] || m.subtype[TYPE_ANYTHING])
@@ -212,7 +214,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 			}
 			if(m.subtype[TYPE_LABEL] || m.subtype[TYPE_ANYTHING] || m.subtype[TYPE_ADDRESS])
 			{
-
 				if(labels.exists(m.element))
 				{
 					op.type = TYPE_LABEL;
@@ -225,7 +226,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 
 
 			//se houver uma operacao, executa-a
-
 			if(m.operation != "" && opOk)
 			{
 				try
@@ -240,10 +240,11 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 						opOk = false;
 					}
 					else
+					{
 						throw(e);
+					}
 				}
 			}
-
 			if(opOk || potentialLabel)
 			{
 				//determina o codigo do modo de enderecamento
@@ -273,7 +274,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 				//se for uma label ainda nao definida
 				if(!opOk)
 				{
-					//op.type = TYPE_LABEL;
 					hasPendency = true;
 				}
 
@@ -296,7 +296,9 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 
 	//se nenhuma instrucao satisfez, a linha esta incorreta
 	if(!inOk && !hasPendency)
+	{
 		throw(eInvalidFormat);
+	}
 	//se houver alguma pendencia, monta a linha depois
 	else if(hasPendency)
 	{
@@ -324,7 +326,6 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
 	{
 		//i contem a ultima instrucao avaliada
 		string code = replaceOperands(i.binFormat,operands,i.size,pos + i.size/8);
-
 		return mem->writeNumber(code,pos,-1);
 	}
 	// esse ponto nunca deve ser executado
@@ -345,6 +346,14 @@ unsigned int Instructions::assemble(string mnemonic, string operandsStr,Memory *
   */
 string replaceOperands(string format,list<t_operand> operands,unsigned int size, unsigned int pos)
 {
+
+	/*ERR("################\n");
+	ERR("%s\n",format.c_str());
+	ERR("Available:\n");
+	list<t_operand>::iterator ot;
+	for(ot=operands.begin() ; ot!=operands.end() ; ot++)
+		ERR("%s(%d)\n",ot->name.c_str(),ot->type);
+	ERR("################\n");*/
 
 	typedef enum {STATE_COPY,STATE_NUM,STATE_REGISTER,STATE_MODE,STATE_ADDRESS,STATE_I_OPERAND,STATE_W_OPERAND} e_state;
 
@@ -371,7 +380,6 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size,
 	for(r=w=0 ; r<=format.size() && w<size ; r++)
 	{
 		unsigned char c = formatStr[r];
-
 		switch (state)
 		{
 			case STATE_COPY:
@@ -462,7 +470,9 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size,
 					op = operand.getNextOperand(TYPE_ADDRESS);
 					number = op.value;
 					//adiciona a lista de enderecos
-					addresses.push_back(make_pair(number, true));
+					//ERR("0:operand(%d):%s\n",op.type,op.name.c_str());
+					//ERR("0:Added :%s\n",number.c_str());
+					addresses.push_back(make_pair(number, op.relative));
 					//escreve o simbolo do endereco
 					result[w++] = ADDRESS;
 
@@ -501,7 +511,9 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size,
 					if(type==TYPE_ADDRESS)
 					{
 						result[w++] = ADDRESS;
-						addresses.push_back(make_pair(op.value, true));
+						//ERR("0:operand:%s\n",op.name.c_str());
+						//ERR("1:Added :%s\n",op.value.c_str());
+						addresses.push_back(make_pair(op.value, op.relative));
 					}
 					//caso contrario, escreve o valor
 					else
@@ -569,7 +581,7 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size,
 		{
 			string ad = adi->first;
 			bool relative = adi->second;
-			//busca o proximo ADDRESS
+			//searches the next ADDRESS
 			while(result[r]!=ADDRESS)
 			{
 				r++;
@@ -584,8 +596,11 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size,
 				number = a.toBin();
 			}
 			else
+			{
 				number = Number::toBin(ad);
+			}
 
+			//ERR("Number:%s\n",number.c_str());
 			//escreve o valor binario, ajustando para o tamanho adequado
 			w = r;
 			unsigned int k,i=0;
@@ -601,6 +616,9 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size,
 
 			while(i<defSize)
 			{
+				//ERR("i:%u\n",i);
+				//ERR("w:%u\n",w);
+				//ERR("k:%u\n",k);
 				result[w++] = number[k++];
 				i++;
 			}
@@ -608,7 +626,6 @@ string replaceOperands(string format,list<t_operand> operands,unsigned int size,
 	}
 	else
 		defSize = 0;
-
 	return result;
 }
 

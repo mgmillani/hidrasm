@@ -6,6 +6,8 @@
 #include "labels.hpp"
 #include "numbers.hpp"
 
+#define TRACE_OFF
+#define ERR_OFF
 #include "debug.hpp"
 #include "defs.hpp"
 
@@ -74,22 +76,27 @@ t_operand Operands::getNextOperand(e_type type)
 		case TYPE_ADDRESSING:
 			while(this->itMode != this->operands.end())
 			{
-				if(this->itMode->type == type)
-					return *this->itMode;
-
+				t_operand r = *this->itMode;
 				this->itMode++;
+				return r;
 			}
 			break;
 		case TYPE_ADDRESS:
 			while(this->itAddr != this->operands.end())
 			{
-				if(this->itAddr->type == type)
-					return *this->itAddr;
+				// ERR("this->itAddr->type: %d\n",this->itAddr->type);
+				if(this->itAddr->type == TYPE_ADDRESS || this->itAddr->type == TYPE_LABEL)
+				{
+					t_operand r = *this->itAddr;
+					this->itAddr++;
+					return r;
+				}
 				this->itAddr++;
 			}
 
 			for(this->itAddr=this->operands.begin() ; this->itAddr!=this->operands.end() ; this->itAddr++)
 			{
+				TRACE("Ta hell?\n");
 				e_type typeFound = this->itAddr->type;
 				if(isSubtype(typeFound,type))
 					return *this->itAddr;
@@ -99,7 +106,12 @@ t_operand Operands::getNextOperand(e_type type)
 			while(this->itReg != this->operands.end())
 			{
 				if(this->itAddr->type == type)
-					return *this->itReg;
+				{
+					t_operand r = *this->itReg;
+					this->itReg++;
+					return r;
+				}
+
 				this->itReg++;
 			}
 			break;
@@ -107,6 +119,8 @@ t_operand Operands::getNextOperand(e_type type)
 			break;
 	}
 
+	ERR("Not found: %d\n",type);
+	throw(eOperandNotFound);
 	return this->operands.front();
 
 }

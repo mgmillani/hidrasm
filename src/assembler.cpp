@@ -38,6 +38,8 @@
 #include "memory.hpp"
 
 #include "defs.hpp"
+#define TRACE_OFF
+//#define ERR_OFF
 #include "debug.hpp"
 
 using namespace std;
@@ -187,6 +189,7 @@ Memory Assembler::assembleCode(string code)
 
 			string result = replaceOperands(binFormat, operands, size,pend.byte);
 			memory.writeNumber(result,pos,-1);
+
 		}
 		catch(e_exception e)
 		{
@@ -197,7 +200,6 @@ Memory Assembler::assembleCode(string code)
 		free(pend.status->operand);
 		free(pend.status);
 	}
-
 	return memory;
 }
 
@@ -247,14 +249,15 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 		}
 	}
 	//se for uma instrucao, monta-a
-	string a = mnemonic;
-	if(a == "")
+	//string a = mnemonic;
+	if(mnemonic == "")
 		return byte;
 	if(this->inst.isInstruction(mnemonic))
 	{
+		TRACE("Instruction: %s(%s)\n",mnemonic.c_str(),operands.c_str());
 		try
 		{
-			byte+=this->inst.assemble(a,operands,memory,byte,&this->pendecies,this->addr,this->labels,this->regs,status);
+			byte+=this->inst.assemble(mnemonic,operands,memory,byte,&this->pendecies,this->addr,this->labels,this->regs,status);
 		}
 		catch(e_exception e)
 		{
@@ -270,6 +273,7 @@ unsigned int Assembler::assembleLine(string line, Memory *memory,unsigned int by
 	//executa a diretiva
 	else
 	{
+		TRACE("Directive: %s\n",mnemonic.c_str());
 		try
 		{
 			byte = this->directives.execute(mnemonic,operands,this->labels,&this->pendecies,memory,byte,status);
@@ -347,7 +351,6 @@ void Assembler::createBinaryV0(FILE *fl,Memory *memory)
 	* cria o arquivo binario no formato do Daedalus
 	* o formato eh o seguinte:
 	* primeiro byte: 3
-	* segundo  byte: 0
 	* proximos 3 bytes: nome da maquina, em maiusculas
 	* resto: dump da memoria, sendo que cada valor eh um inteiro de 16 bit em notacao little-endian
 	*/
@@ -368,13 +371,12 @@ void Assembler::createBinaryV3(FILE *fl,Memory *memory)
 
 	if(fl == NULL)
 		throw eFileNotFound;
-	//escreve o 3 e o 0
+	//escreve o 3
 	unsigned char data[2];
 	data[0] = 3;
-	data[1] = 0;
-	fwrite(data,1,2,fl);
+	fwrite(data,1,1,fl);
 	//escreve a sigla
-	fwrite(alias,1,4,fl);
+	fwrite(alias,1,3,fl);
 
 	data[1] = 0;
 	unsigned int size;
@@ -503,14 +505,14 @@ void Assembler::parseLine(string line,string *defLabel, string *mnemonic, string
 		}
 	}
 
-	//se uma palavra ainda deve ser lida
+	//if we still need to read a word
 	if(read)
 	{
-
+		//removes whitespaces
 		if(ISWHITESPACE(line[i-1]))
 		{
 			i--;
-			while(ISWHITESPACE(line[i-1]))
+			while(ISWHITESPACE(line[i]))
 				i--;
 			i++;
 		}
@@ -532,7 +534,6 @@ list<t_operand> Assembler::recalculateOperands(list<t_operand> operands,t_status
 	for(ot=operands.begin() ; ot!=operands.end() ; ot++)
 	{
 		t_operand o = *ot;
-
 		if(o.type == TYPE_LABEL)
 		{
 			status->label = (char *)o.name.c_str();

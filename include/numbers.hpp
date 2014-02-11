@@ -23,7 +23,7 @@
 
 using namespace std;
 
-typedef enum {BINARY,DECIMAL,HEXADECIMAL,INVALID} e_numType;
+typedef enum {BINARY,DECIMAL,HEXADECIMAL,PRE_HEXADECIMAL,INVALID} e_numType;
 
 class Number
 {
@@ -45,13 +45,14 @@ class Number
 	void operate(char operation,Number &n);
 
 	/**
-	  *	converte o numero para um inteiro
-	  *	caso seja maior que um, trunca-o, retornando somente os bits menos significativos
-	  * o ultimo caractere determina o tipo do numero:
-	  * b/B - binario
+	  *	converts a number to an int
+	  *	if it is too big, it will be truncated, returning only the least-significative bits
+	  * the type is given by the last character
+	  * b/B - binary
 	  * d/D - decimal
 	  * h/H - hexadecimal
-	  * nada/algarismo - decimal
+	  * nothing/algarism - decimal
+	  * TODO: If compatibilty-mode is active, if the first character is h/H, the number is regarded as hexadecimal
 	  */
 	static int toInt(string n);
 
